@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="IC_COMPILER:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/IC_COMPILER_jar</output-path>
+    <root id="archive" name="IC_COMPILER.jar">
+      <element id="module-output" name="IC_COMPILER" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../utils/java-cup-11b-runtime.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../utils/java-cup-11b.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
