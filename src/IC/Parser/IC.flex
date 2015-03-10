@@ -10,23 +10,17 @@ import java_cup.runtime.*;
 %type Token
 
 %line
+%column
 %scanerror LexicalError
 
-%unicode
-
 %cup
-%column
+
 
 %{
   StringBuffer string = new StringBuffer();
 %}
 
-%state COMMENTS
 %state STRING
-
-LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace     = {LineTerminator} | [ \t\f]
 
 /* comments */
 Comment = {TraditionalComment} | {EndOfLineComment} | {DocumentationComment}
@@ -34,19 +28,20 @@ TraditionalComment   = "/*" [^*] ~"*/" | "/*" "*"+ "/"
 EndOfLineComment     = "//" {InputCharacter}* {LineTerminator}?
 DocumentationComment = "/**" {CommentContent} "*"+ "/"
 CommentContent       = ( [^*] | \*+ [^/*] )*
-PrintableAsciiChar = [ -~]
 
 /* special chars */
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 WhiteSpace     = {LineTerminator} | [ \t\f]
 
+/* Somple Regex */
 ALPHA=[A-Za-z]
 DIGIT=[0-9]
 ALPHA_NUMERIC={ALPHA}|{DIGIT}
 DecIntegerLiteral = 0 | [1-9][0-9]*
-LineTerminator = \r|\n|\r\n
+PrintableAsciiChar = [ -~]
 
+/* identifiers */
 VariableIdentifier = [a-z]({ALPHA_NUMERIC})*
 ClassIdentifier = [A-Z]({ALPHA_NUMERIC})*
 %%
@@ -55,7 +50,7 @@ ClassIdentifier = [A-Z]({ALPHA_NUMERIC})*
 <YYINITIAL> \"                     { string.setLength(0);  string.append('"'); yybegin(STRING); }
 
 <STRING> {
-    \"                             { yybegin(YYINITIAL); string.append('"'); return new TokenWithIdentifier(sym.QUOTE, string.toString(), yyline, yycolumn  - string.toString().length() + 1); }
+    \"                             { yybegin(YYINITIAL); string.append('"'); return new TokenWithIdentifier(sym.STRING, string.toString(), yyline, yycolumn  - string.toString().length() + 1); }
     "\\\""                         { string.append( '\"' ); }
     "\\t"                          { string.append( "\t" ); }
     "\\n"                          { string.append( "\\n" ); }
@@ -115,15 +110,14 @@ ClassIdentifier = [A-Z]({ALPHA_NUMERIC})*
     "false"		    	{ return new Token(sym.FALSE, yytext(), yyline, yycolumn); }
     "void"		    	{ return new Token(sym.VOID, yytext(), yyline, yycolumn); }
     "while"		    	{ return new Token(sym.WHILE, yytext(), yyline, yycolumn); }
-    "string"			{ return new Token(sym.STRING, yytext(), yyline, yycolumn); }
+    "string"			{ return new Token(sym.string, yytext(), yyline, yycolumn); }
     {DecIntegerLiteral}			{ return new TokenWithIdentifier(sym.INTEGER, yytext(), yyline, yycolumn); }
     {VariableIdentifier}	      { return new TokenWithIdentifier(sym.ID, yytext(), yyline, yycolumn); }
     {ClassIdentifier}     	{ return new TokenWithIdentifier(sym.CLASS_ID, yytext(), yyline, yycolumn); }
 }
 
-
 /* error fallback */
-[^]                              { throw new LexicalError("Illegal character \""+yytext()+"\" at line "+yyline+", column "+yycolumn); }
+[^]                              { throw new LexicalError("Error!	" + (yyline+1)  + ": Lexical error: " + yytext()); }
 
 
 <<EOF>>                          {  return new Token(sym.EOF, yytext(), yyline, yycolumn); }

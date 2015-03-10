@@ -1,5 +1,8 @@
 package IC.Parser;
 
+/**
+ * list of token symbols
+ */
 public class sym {
     public static final int LP = 1;
     public static final int RP = 2;
@@ -44,9 +47,10 @@ public class sym {
     public static final int EXTENDS = 41;
     public static final int INTEGER = 42;
     public static final int CONTINUE = 43;
-    public static final int QUOTE = 44;
+    public static final int string = 44;
     public static final int STRING = 45;
     public static final int DOT = 46;
     public static final int FALSE = 47;
     public static final int RCBR = 48;
+
 }

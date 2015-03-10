@@ -2,12 +2,24 @@ package IC.Parser;
 
 import java_cup.runtime.Symbol;
 
+import java.lang.reflect.Field;
+
+/**
+ * Represents analyzer tokens
+ */
 public class Token extends Symbol {
 
     private int line;
     private int column;
     private String value;
 
+    /**
+     *
+     * @param type sym Type
+     * @param value value of scanned char
+     * @param line line number
+     * @param column column number
+     */
     public Token(int type, Object value, int line, int column){
         super(type, value);
         this.line = line;
@@ -15,14 +27,25 @@ public class Token extends Symbol {
         this.value = value instanceof String ? (String) value : "";
     }
 
+    /**
+     * @return line number
+     */
     public int getLine() {
         return line + 1;
     }
 
+    /**
+     *
+     * @return column number
+     */
     public int getColumn() {
         return column + 1;
     }
 
+    /**
+     *
+     * @return input string value
+     */
     public String getValue() {
         return value;
     }
@@ -33,9 +56,7 @@ public class Token extends Symbol {
      */
     @Override
     public String toString() {
-        //return getLine() + ": " + getTokenName(sym) + "(" + getValue() + ")";
-        //return line + ": " + getTokenName(sym);
-        //return getTokenName(sym) + "\t" + getTokenName(sym) +"\t" + getLine() + ":" + getColumn();
+        //return line + ": " + getTokenName(sym); // Document style
         return getValue() + "\t" + getValue() +"\t" + getLine() + ":" + getColumn();
     }
 
@@ -43,14 +64,13 @@ public class Token extends Symbol {
      * Converts an int token code into the name of the
      * token by reflection on the cup symbol class/interface sym
      *
-     * This code was contributed by Karl Meissner <meissnersd@yahoo.com>
      */
     protected String getTokenName(int token) {
         try {
             java.lang.reflect.Field [] classFields = sym.class.getFields();
-            for (int i = 0; i < classFields.length; i++) {
-                if (classFields[i].getInt(null) == token) {
-                    return classFields[i].getName();
+            for (Field classField : classFields) {
+                if (classField.getInt(null) == token) {
+                    return classField.getName();
                 }
             }
         } catch (Exception e) {
