@@ -13,8 +13,6 @@ public class Token extends Symbol {
     private int column;
     private String value;
 
-
-
     /**
      *
      * @param type sym Type

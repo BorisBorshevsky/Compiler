@@ -9,6 +9,9 @@ import java_cup.runtime.Symbol;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
+/**
+ * Main class of the jar project
+ */
 public class Compiler {
 
     public static void main(String[] args){

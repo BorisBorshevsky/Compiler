@@ -3,7 +3,7 @@ package IC;
 import java.io.File;
 
 /**
- * Created by user on 3/28/2015.
+ * helper class to handle args from user.
  */
 public class Options {
     public String getLibicPath() {

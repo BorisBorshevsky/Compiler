@@ -1,5 +1,8 @@
 package IC.Parser;
 
+/**
+ * exception class for syntax error
+ */
 public class SyntaxError extends Exception {
 
     private Token token;
