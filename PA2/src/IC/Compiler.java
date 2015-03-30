@@ -22,29 +22,28 @@ public class Compiler {
         boolean printAst = options.isPrintAST();
 
         try {
+            if (libFileName != null) {
+                FileReader libFile = new FileReader(libFileName);
+                Lexer libLexer = new Lexer(libFile);
+                LibParser libParser = new LibParser(libLexer);
+                try {
+                    Symbol libRootSymbol = libParser.parse();
+                    if (libRootSymbol == null) {
+                        System.err.println(String.format("Parsed %s Failed!", libFileName));
+                    } else {
+                        System.out.println(String.format("Parsed %s successfully!", libFileName));
+                    }
 
-            FileReader libFile = new FileReader(libFileName);
-            Lexer libLexer = new Lexer(libFile);
-            LibParser libParser = new LibParser(libLexer);
-            try {
-                Symbol libRootSymbol = libParser.parse();
-                if (libRootSymbol == null) {
-                    System.err.println(String.format("Parsed %s Failed!", libFileName));
-                }else {
-                    System.out.println(String.format("Parsed %s successfully!", libFileName));
+                } catch (SyntaxError e) {
+                    System.err.print("Syntax error while parsing Library File " + libFileName + ": ");
+                    System.err.println(e.toString());
+                } catch (LexicalError e) {
+                    System.err.print("Lexical error while parsing Library File " + libFileName + ": ");
+                    System.err.println(e.toString());
+                } finally {
+                    libFile.close();
                 }
-
-            } catch (SyntaxError e) {
-                System.err.print("Syntax error while parsing Library File " + libFileName+ ": ");
-                System.err.println(e.toString());
-            } catch (LexicalError e) {
-                System.err.print("Lexical error while parsing Library File " + libFileName + ": ");
-                System.err.println(e.toString());
             }
-            finally {
-                libFile.close();
-            }
-
             FileReader programFile = new FileReader(icFileName);
             Lexer scanner = new Lexer(programFile);
             Parser parser = new Parser(scanner);

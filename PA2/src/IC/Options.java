@@ -22,7 +22,7 @@ public class Options {
     private String icFile;
     private boolean printAST;
     private Options() {
-        this.libicPath = "libic.sig";
+        this.libicPath = null;
         this.printAST = false;
         this.icFile = null;
     }
@@ -53,23 +53,6 @@ public class Options {
         if (options.icFile == null) {
             handleWrongSyntax();
         }
-        options.makeSureValid();
         return options;
-    }
-    private void makeSureValid() {
-        File f = new File(libicPath);
-        boolean valid = true;
-        if (!f.exists()) {
-            System.out.println("Can't find library signature file at path: " + libicPath);
-            valid = false;
-        }
-        f = new File(icFile);
-        if (!f.exists()) {
-            System.out.println("Can't find source file at path: " + icFile);
-            valid = false;
-        }
-        if (!valid) {
-            handleWrongSyntax();
-        }
     }
 }
