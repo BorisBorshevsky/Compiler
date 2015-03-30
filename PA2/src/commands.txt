@@ -1,0 +1,1 @@
+C:\Tools\IntellijWorkspace\IC_COMPILER>java -jar java-cup-11a.jar -destdir C:\Tools\IntellijWorkspace\IC_COMPILER\src\IC\Parser -parser Parser C:\Tools\IntellijWorkspace\IC_COMPILER\src\IC\Parser\test.cup
