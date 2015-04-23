@@ -25,8 +25,7 @@ public abstract class BinaryOp extends Expression {
 	 * @param operand2
 	 *            The second operand.
 	 */
-	protected BinaryOp(Expression operand1, BinaryOps operator,
-			Expression operand2) {
+	protected BinaryOp(Expression operand1, BinaryOps operator,	Expression operand2) {
 		super(operand1.getLine());
 		this.operand1 = operand1;
 		this.operator = operator;

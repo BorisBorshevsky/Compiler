@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_pa2" default="compile.module.pa2">
+  <dirname property="module.pa2.basedir" file="${ant.file.module_pa2}"/>
+  
+  <property name="module.jdk.home.pa2" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.pa2" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.pa2" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.pa2" value="-encoding UTF-8 -source 8 ${compiler.args}"/>
+  
+  <property name="pa2.output.dir" value="${module.pa2.basedir}/../../../../../production/PA2"/>
+  <property name="pa2.testoutput.dir" value="${module.pa2.basedir}/../../../../../test/PA2"/>
+  
+  <path id="pa2.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="pa2.module.production.classpath">
+    <path refid="${module.jdk.classpath.pa2}"/>
+    <path refid="library.java-cup-11a-runtime.classpath"/>
+  </path>
+  
+  <path id="pa2.runtime.production.module.classpath">
+    <pathelement location="${pa2.output.dir}"/>
+    <path refid="library.java-cup-11a-runtime.classpath"/>
+  </path>
+  
+  <path id="pa2.module.classpath">
+    <path refid="${module.jdk.classpath.pa2}"/>
+    <pathelement location="${pa2.output.dir}"/>
+    <path refid="library.java-cup-11a-runtime.classpath"/>
+  </path>
+  
+  <path id="pa2.runtime.module.classpath">
+    <pathelement location="${pa2.testoutput.dir}"/>
+    <pathelement location="${pa2.output.dir}"/>
+    <path refid="library.java-cup-11a-runtime.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.pa2">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.pa2">
+    <patternset refid="excluded.from.module.pa2"/>
+  </patternset>
+  
+  <path id="pa2.module.sourcepath">
+    <dirset dir="${module.pa2.basedir}/../../PA2">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.pa2" depends="compile.module.pa2.production,compile.module.pa2.tests" description="Compile module PA2"/>
+  
+  <target name="compile.module.pa2.production" depends="register.custom.compilers" description="Compile module PA2; production classes">
+    <mkdir dir="${pa2.output.dir}"/>
+    <javac2 destdir="${pa2.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.pa2}/javac">
+      <compilerarg line="${compiler.args.pa2}"/>
+      <bootclasspath refid="pa2.module.bootclasspath"/>
+      <classpath refid="pa2.module.production.classpath"/>
+      <src refid="pa2.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.pa2"/>
+    </javac2>
+    
+    <copy todir="${pa2.output.dir}">
+      <fileset dir="${module.pa2.basedir}/../src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.pa2.tests" depends="register.custom.compilers,compile.module.pa2.production" description="compile module PA2; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.pa2" description="cleanup module">
+    <delete dir="${pa2.output.dir}"/>
+    <delete dir="${pa2.testoutput.dir}"/>
+  </target>
+</project>

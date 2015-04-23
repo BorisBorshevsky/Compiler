@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.Symbols.StatementBlockSymbolTable;
+
 import java.util.List;
 
 /**
@@ -10,6 +12,11 @@ import java.util.List;
 public class StatementsBlock extends Statement {
 
 	private List<Statement> statements;
+
+    @Override
+    public <D, U> U accept(PropagatingVisitor<D, U> v, D context) {
+        return v.visit(this, context);
+    }
 
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
@@ -32,4 +39,14 @@ public class StatementsBlock extends Statement {
 		return statements;
 	}
 
+
+    StatementBlockSymbolTable symbolTable;
+
+    public StatementBlockSymbolTable getStatementsBlockSymbolTable() {
+        return symbolTable;
+    }
+
+    public void setBlockSymbolTable(StatementBlockSymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
 }

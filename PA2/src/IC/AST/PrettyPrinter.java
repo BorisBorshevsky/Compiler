@@ -15,8 +15,7 @@ public class PrettyPrinter implements Visitor {
     /**
      * Constructs a new pretty printer visitor.
      *
-     * @param ICFilePath
-     *            The path + name of the IC file being compiled.
+     * @param ICFilePath The path + name of the IC file being compiled.
      */
     public PrettyPrinter(String ICFilePath) {
         this.ICFilePath = ICFilePath;

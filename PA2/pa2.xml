@@ -97,6 +97,12 @@
   
   <!-- Project Libraries -->
   
+  <path id="library.lib.classpath">
+    <fileset dir="${basedir}/lib">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
   
   <!-- Global Libraries -->
   
@@ -133,5 +139,31 @@
   
   <target name="build.modules" depends="init, clean, compile.module.pa2" description="build all modules"/>
   
-  <target name="all" depends="build.modules" description="build all"/>
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.pa2:jar" value="${basedir}/out/artifacts/PA2_jar"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.PA2.jar" value="${artifacts.temp.dir}/PA2.jar"/>
+  </target>
+  
+  <target name="artifact.pa2:jar" depends="init.artifacts, compile.module.pa2" description="Build &#39;PA2:jar&#39; artifact">
+    <property name="artifact.temp.output.pa2:jar" value="${artifacts.temp.dir}/PA2_jar"/>
+    <mkdir dir="${artifact.temp.output.pa2:jar}"/>
+    <jar destfile="${temp.jar.path.PA2.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${pa2.output.dir}"/>
+    </jar>
+    <copy file="${temp.jar.path.PA2.jar}" tofile="${artifact.temp.output.pa2:jar}/PA2.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.pa2:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.pa2:jar}"/>
+    <copy todir="${artifact.output.pa2:jar}">
+      <fileset dir="${artifact.temp.output.pa2:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
 </project>

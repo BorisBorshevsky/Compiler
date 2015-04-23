@@ -18,6 +18,9 @@ public abstract class ASTNode {
 	 */
 	public abstract Object accept(Visitor visitor);
 
+    /** accept propagating visitor **/
+    public abstract <D, U> U accept(PropagatingVisitor<D, U> v, D context);
+
 	/**
 	 * Constructs an AST node corresponding to a line number in the original
 	 * code. Used by subclasses.

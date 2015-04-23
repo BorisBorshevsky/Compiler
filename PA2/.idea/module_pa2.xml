@@ -18,23 +18,27 @@
   <path id="pa2.module.production.classpath">
     <path refid="${module.jdk.classpath.pa2}"/>
     <path refid="library.java-cup-11a-runtime.classpath"/>
+    <path refid="library.lib.classpath"/>
   </path>
   
   <path id="pa2.runtime.production.module.classpath">
     <pathelement location="${pa2.output.dir}"/>
     <path refid="library.java-cup-11a-runtime.classpath"/>
+    <path refid="library.lib.classpath"/>
   </path>
   
   <path id="pa2.module.classpath">
     <path refid="${module.jdk.classpath.pa2}"/>
     <pathelement location="${pa2.output.dir}"/>
     <path refid="library.java-cup-11a-runtime.classpath"/>
+    <path refid="library.lib.classpath"/>
   </path>
   
   <path id="pa2.runtime.module.classpath">
     <pathelement location="${pa2.testoutput.dir}"/>
     <pathelement location="${pa2.output.dir}"/>
     <path refid="library.java-cup-11a-runtime.classpath"/>
+    <path refid="library.lib.classpath"/>
   </path>
   
   

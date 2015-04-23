@@ -11,6 +11,11 @@ public class StaticCall extends Call {
 
 	private String className;
 
+    @Override
+    public <D, U> U accept(PropagatingVisitor<D, U> v, D context) {
+        return v.visit(this, context);
+    }
+
 	public Object accept(Visitor visitor) {
 		return visitor.visit(this);
 	}

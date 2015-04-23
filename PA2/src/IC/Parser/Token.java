@@ -9,23 +9,57 @@ import java.lang.reflect.Field;
  */
 public class Token extends Symbol {
 
+    private String tag;
+    private int id;
     private int line;
     private int column;
     private String value;
 
-    /**
-     *
-     * @param type sym Type
-     * @param value value of scanned char
-     * @param line line number
-     * @param column column number
-     */
-    public Token(int type, Object value, int line, int column){
-        super(type, line + 1, 0, value);
+    public String getTag() {
+        return tag;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+//    public Token(int id)
+//    {
+//        super(id);
+//        this.id = id;
+//    }
+//
+//
+//    public Token(int id, Object val)
+//    {
+//        super(id, val);
+//        this.id = id;
+//        this.value = val.toString();
+//    }
+
+    public Token(int id, int line, int column)
+    {
+        super(id, line, column);
         this.line = line;
         this.column = column;
-        this.value = value instanceof String ? (String) value : "";
     }
+
+    public Token(int id, int line, int column, Object val)
+    {
+        super(id, line, column, val);
+//        this(id, val);
+        this.line = line;
+        this.column = column;
+        tag = val.toString();
+    }
+
+
+    public Token(int id, int line, int column, Object val, String tag)
+    {
+        this(id, line, column, val);
+        this.tag = tag;
+    }
+
 
     /**
      * @return line number

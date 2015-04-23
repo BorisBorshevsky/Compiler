@@ -13,6 +13,11 @@ public class LogicalBinaryOp extends BinaryOp {
 		return visitor.visit(this);
 	}
 
+    @Override
+    public <D, U> U accept(PropagatingVisitor<D, U> v, D context) {
+        return v.visit(this, context);
+    }
+
 	/**
 	 * Constructs a new logical binary operation node.
 	 * 
@@ -23,8 +28,7 @@ public class LogicalBinaryOp extends BinaryOp {
 	 * @param operand2
 	 *            The second operand.
 	 */
-	public LogicalBinaryOp(Expression operand1, BinaryOps operator,
-                           Expression operand2) {
+	public LogicalBinaryOp(Expression operand1, BinaryOps operator, Expression operand2) {
 		super(operand1, operator, operand2);
 	}
 

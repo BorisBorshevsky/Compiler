@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.Symbols.ClassSymbolTable;
+
 import java.util.List;
 
 /**
@@ -80,5 +82,21 @@ public class ICClass extends ASTNode {
 	public List<Method> getMethods() {
 		return methods;
 	}
+
+
+    ClassSymbolTable symbolTable;
+
+    public ClassSymbolTable getClassSymbolTable() {
+        return symbolTable;
+    }
+
+    public void setClassSymbolTable(ClassSymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
+
+    @Override
+    public <D, U> U accept(PropagatingVisitor<D, U> v, D context) {
+        return v.visit(this, context);
+    }
 
 }
