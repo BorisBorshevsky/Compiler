@@ -1,5 +1,7 @@
 package IC.AST;
 
+import IC.Symbols.SymbolTable;
+
 /**
  * Abstract base class for statement AST nodes.
  * 
@@ -17,4 +19,12 @@ public abstract class Statement extends ASTNode {
 		super(line);
 	}
 
+
+    public SymbolTable getParent() {
+        return parent;
+    }
+
+    public void setParent(SymbolTable parent) {
+        this.parent = parent;
+    }
 }

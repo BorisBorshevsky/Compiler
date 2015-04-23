@@ -1,0 +1,88 @@
+Abstract Syntax Tree: test\example2.ic
+
+1: Declaration of class: A
+  2: Declaration of field: str
+   2: Primitive data type: string
+  3: Declaration of field: i
+   3: Primitive data type: int
+  5: Declaration of static method: sfunc
+    5: Primitive data type: int
+    5: Parameter: b
+     5: Primitive data type: boolean
+    6: If statement, with Else operation
+      6: Reference to variable: b
+      6: Block of statements
+        7: Block of statements
+          8: Declaration of local variable: k, with initial value
+            8: Primitive data type: int
+            8: Integer literal: 5
+        10: Return statement, with return value
+         10: Integer literal: 1
+      12: Block of statements
+        13: Declaration of local variable: x, with initial value
+          13: User-defined data type: A
+          13: Instantiation of class: A
+        14: Assignment statement
+          14: Reference to variable: i, in external scope
+           14: Reference to variable: x
+          14: Integer literal: 9
+        15: Assignment statement
+          15: Reference to variable: str, in external scope
+           15: Reference to variable: x
+          15: String literal: "\"hello\""
+        16: Return statement, with return value
+         16: Integer literal: 0
+  20: Declaration of virtual method: vfunc
+    20: Primitive data type: void
+    20: Parameter: a
+     20: User-defined data type: A
+    20: Parameter: max
+     20: Primitive data type: int
+    20: Parameter: val
+     20: Primitive data type: int
+    21: Declaration of local variable: arr, with initial value
+      21: Primitive data type: 1-dimensional array of int
+      21: Array allocation
+        21: Primitive data type: int
+        21: Reference to variable: max
+    22: Declaration of local variable: i, with initial value
+      22: Primitive data type: int
+      22: Integer literal: 0
+    23: While statement
+      23: Logical binary operation: less than
+        23: Reference to variable: i
+        23: Reference to variable: max
+      23: Block of statements
+        24: Assignment statement
+          24: Reference to array
+            24: Reference to variable: arr
+            24: Reference to variable: i
+          24: Reference to variable: val
+        25: Assignment statement
+          25: Reference to variable: i
+          25: Mathematical binary operation: addition
+            25: Reference to variable: i
+            25: Integer literal: 1
+        26: If statement
+          26: Logical binary operation: equality
+            26: Reference to variable: a
+            26: Literal: null
+          27: Break statement
+32: Declaration of class: B, subclass of A
+  33: Declaration of field: j
+   33: Primitive data type: int
+  35: Declaration of virtual method: vfunc
+    35: Primitive data type: void
+    35: Parameter: a
+     35: User-defined data type: A
+    35: Parameter: max
+     35: Primitive data type: int
+    35: Parameter: val
+     35: Primitive data type: int
+39: Declaration of class: C
+  40: Declaration of static method: main
+    40: Primitive data type: void
+    40: Parameter: args
+     40: Primitive data type: 1-dimensional array of string
+    41: Declaration of local variable: a
+     41: User-defined data type: 2-dimensional array of A

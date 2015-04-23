@@ -1,6 +1,7 @@
 package IC.AST;
 
 import IC.LiteralTypes;
+import IC.Symbols.SymbolTable;
 
 /**
  * Literal value AST node.
@@ -61,6 +62,30 @@ public class Literal extends Expression {
 		return value;
 	}
 
+
+    public void setType(LiteralTypes type) {
+        this.type = type;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+    public boolean isParentIsUMinus() {
+        return parentIsUMinus;
+    }
+
+    public void setParentIsUMinus(boolean parentIsUMinus) {
+        this.parentIsUMinus = parentIsUMinus;
+    }
+
+    public SymbolTable getParent() {
+        return parent;
+    }
+
+    public void setParent(SymbolTable parent) {
+        this.parent = parent;
+    }
 
     public void setValue(Integer value) {
         this.value = value;

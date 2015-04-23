@@ -8,8 +8,8 @@ package IC;
  */
 public enum LiteralTypes {
 
-	INTEGER(DataTypes.INT.getDefaultValue(), "Integer literal"), 
-	STRING(DataTypes.STRING.getDefaultValue(), "String literal") {
+	INTEGER(DataTypes.INT.getDefaultValue(), "Integer literal", "int"),
+	STRING(DataTypes.STRING.getDefaultValue(), "String literal", "string") {
 		private void replaceEscapeSequences(StringBuffer string) {
 			for (int i = 0; i < string.length(); ++i) {
 				String replacement = String.valueOf(string.charAt(i));
@@ -36,11 +36,17 @@ public enum LiteralTypes {
 			return "\"" + formattedString.toString() + "\"";
 		}
 	},
-	TRUE(true, "Boolean literal"),
-	FALSE(false, "Boolean literal"),
-	NULL(null, "Literal");
-	
-	private Object value;
+	TRUE(true, "Boolean literal", "boolean"),
+	FALSE(false, "Boolean literal", "boolean"),
+	NULL(null, "Literal", "null");
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    private String shortName;
+
+    private Object value;
 	
 	private String description;
 
@@ -48,6 +54,13 @@ public enum LiteralTypes {
 		this.value = value;
 		this.description = description;
 	}
+
+    private LiteralTypes(Object value, String description, String shortName) {
+        this.value = value;
+        this.description = description;
+        this.shortName = shortName;
+    }
+
 
 	/**
 	 * Returns the intrinsic value of the literal.

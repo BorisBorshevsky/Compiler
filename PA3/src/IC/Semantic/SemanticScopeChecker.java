@@ -59,10 +59,8 @@ public class SemanticScopeChecker implements Visitor {
 
     private boolean verifySymbolIsOfKind(ASTNode node, Symbol symbol, SymbolKind... kinds) {
         if (!Arrays.asList(kinds).contains(symbol.getKind())) {
-            String kindsStr = JoinStringsHelper.joinStrings(Arrays
-                .asList(kinds));
-            errors.add(new SemanticError("Symbol is not of kind '" + kindsStr
-                + "'", node.getLine(), symbol.getName()));
+            String kindsStr = JoinStringsHelper.joinStrings(Arrays                .asList(kinds));
+            errors.add(new SemanticError("Symbol is not of kind '" + kindsStr                + "'", node.getLine(), symbol.getName()));
             return false;
         }
         return true;

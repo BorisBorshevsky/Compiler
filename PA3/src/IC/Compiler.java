@@ -32,7 +32,7 @@ public class Compiler {
     private static boolean printAst;
     private static boolean dumpsymtab;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         Options options = Options.parseCommandLineArgs(args);
         libFileName = options.getLibicPath();
@@ -55,14 +55,21 @@ public class Compiler {
                     libRootSymbol = (ICClass) parseLibFile(libFileName);
                 }
 
+
+
+                semanticChecks(libRootSymbol, icRootClass);
+
                 if (printAst) {
+
+//                    SymbolTableBuilderVisitor symTabBuilder = new SymbolTableBuilderVisitor(new File(icFileName).getName());
+//                    GlobalSymbolTable symbolTable = symTabBuilder.visit(icRootClass);
+//
                     PrettyPrinter prettyPrinter = new PrettyPrinter(icFileName);
                     String output = (String) icRootClass.accept(prettyPrinter);
                     System.out.println(output);
                 }
 
 
-                //semanticChecks(libRootSymbol, icRootClass);
 
 
             }
@@ -70,7 +77,7 @@ public class Compiler {
         } catch (FileNotFoundException e) {
             System.err.print("File not found");
             System.err.println(e.getStackTrace());
-        } catch (Exception e ){
+        } catch (Exception e) {
             e.printStackTrace();
             //System.err.println(e.getStackTrace()  + e.getMessage();
         }
@@ -80,8 +87,9 @@ public class Compiler {
         //semantic checks
 
         //add class to root class
-        icRootClass.getClasses().add(libRootSymbol);
-
+        if (libRootSymbol != null) {
+            icRootClass.getClasses().add(libRootSymbol);
+        }
 
         SymbolTableBuilderVisitor symTabBuilder = new SymbolTableBuilderVisitor(new File(icFileName).getName());
         GlobalSymbolTable symbolTable = symTabBuilder.visit(icRootClass);
@@ -107,7 +115,7 @@ public class Compiler {
 
         //single main check
         SingleMainFunctionValidator mainValidator = new SingleMainFunctionValidator();
-        SemanticError mainValidatorResult = (SemanticError) mainValidator .visit(icRootClass);
+        SemanticError mainValidatorResult = (SemanticError) mainValidator.visit(icRootClass);
         if (mainValidatorResult != null) {
             printError(icFileName, mainValidatorResult);
 //                    return false;
@@ -134,7 +142,7 @@ public class Compiler {
         try {
             Symbol rootSymbol = parser.parse();
             System.out.println(String.format("Parsed %s successfully!", icFileName));
-            return (Program)rootSymbol.value;
+            return (Program) rootSymbol.value;
 
         } catch (SyntaxError e) {
             System.err.print("Syntax Error while parsing IC File " + icFileName + ": ");
@@ -142,8 +150,7 @@ public class Compiler {
         } catch (LexicalError e) {
             System.err.print("Lexical error while parsing IC File " + icFileName + ": ");
             System.err.println(e.toString());
-        }
-        finally {
+        } finally {
             programFile.close();
         }
         return null;

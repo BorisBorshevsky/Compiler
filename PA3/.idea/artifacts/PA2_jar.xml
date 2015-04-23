@@ -2,7 +2,7 @@
   <artifact type="jar" name="PA2:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/PA2_jar</output-path>
     <root id="archive" name="PA2.jar">
-      <element id="module-output" name="PA2" />
+      <element id="module-output" name="PA3" />
     </root>
   </artifact>
 </component>

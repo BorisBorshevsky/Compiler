@@ -29,6 +29,7 @@ public class MethodSymbolType extends SymbolType {
 		return builder.toString();
 	}
 
+
 	private static boolean areListsEqual(List<?> list1, List<?> list2) {
 		if (list1.size() != list2.size()) {
 			return false;

@@ -756,7 +756,7 @@ public class Lexer implements java_cup.runtime.Scanner {
 
       switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
         case 1: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Illegal character \""+yytext() + "\"", yyline+1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Illegal character \""+yytext() + "\"", yyline+1, yycolumn+1),yyline+1);
           }
         case 65: break;
         case 2: 
@@ -856,7 +856,7 @@ public class Lexer implements java_cup.runtime.Scanner {
           }
         case 89: break;
         case 26: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Unterminated string at end of line", yyline+1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Unterminated string at end of line", yyline+1, yycolumn+1),yyline+1);
           }
         case 90: break;
         case 27: 
@@ -864,7 +864,7 @@ public class Lexer implements java_cup.runtime.Scanner {
           }
         case 91: break;
         case 28: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Illegel tab in string literal", yyline + 1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Illegel tab in string literal", yyline + 1, yycolumn+1),yyline+1);
           }
         case 92: break;
         case 29: 
@@ -872,11 +872,11 @@ public class Lexer implements java_cup.runtime.Scanner {
           }
         case 93: break;
         case 30: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Identifier must start with lower case letters", yyline+1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Identifier must start with lower case letters", yyline+1, yycolumn+1),yyline+1);
           }
         case 94: break;
         case 31: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Integer must not start with leading zeroes", yyline+1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Integer must not start with leading zeroes", yyline+1, yycolumn+1),yyline+1);
           }
         case 95: break;
         case 32: 
@@ -912,7 +912,7 @@ public class Lexer implements java_cup.runtime.Scanner {
           }
         case 103: break;
         case 40: 
-          { throw new LexicalError(String.format("%d:%d : lexical error; Illegal escape sequence \""+yytext()+"\"", yyline+1, yycolumn+1));
+          { throw new LexicalError(String.format("%d:%d : lexical error; Illegal escape sequence \""+yytext()+"\"", yyline+1, yycolumn+1),yyline+1);
           }
         case 104: break;
         case 41: 
@@ -1017,11 +1017,11 @@ public class Lexer implements java_cup.runtime.Scanner {
             zzDoEOF();
             switch (zzLexicalState) {
             case STRING: {
-              throw new LexicalError(String.format("%d:%d : lexical error; Unterminated string at end of file", yyline+1, yycolumn+1), yyline+1);
+              throw new LexicalError(String.format("%d:%d : lexical error; Unterminated string at end of file", yyline+1, yycolumn+1),yyline+1);
             }
             case 147: break;
             case COMMENT: {
-              throw new LexicalError(String.format("%d:%d : lexical error; Unterminated Comment", yyline+1, yycolumn+1), yyline+1);
+              throw new LexicalError(String.format("%d:%d : lexical error; Unterminated Comment", yyline+1, yycolumn+1),yyline+1);
             }
             case 148: break;
             default:

@@ -1,7 +1,10 @@
 package IC.AST;
 
+import IC.Parser.JoinStringsHelper;
+import IC.SymbolTypes.SymbolType;
 import IC.Symbols.MethodSymbolTable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +51,24 @@ public abstract class Method extends ASTNode {
 		return name;
 	}
 
-	public List<Formal> getFormals() {
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        List<String> formalsTypeNames = new ArrayList<>();
+        for (Formal formal : getFormals()) {
+            formalsTypeNames.add(formal.getType().getName());
+        }
+        builder.append(JoinStringsHelper.joinStrings(formalsTypeNames));
+        builder.append(" -> ");
+        builder.append(getType().getName());
+        builder.append("}");
+        return builder.toString();
+    }
+
+
+
+    public List<Formal> getFormals() {
 		return formals;
 	}
 

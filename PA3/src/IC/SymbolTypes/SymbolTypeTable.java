@@ -7,8 +7,8 @@ import java.util.*;
 
 public class SymbolTypeTable {
 	String programName;
-	List<SymbolType> symbolTypes = new ArrayList<SymbolType>();
-	Map<SymbolType, Integer> symbolTypesIds = new HashMap<SymbolType, Integer>();
+	List<SymbolType> symbolTypes = new ArrayList<>();
+	Map<SymbolType, Integer> symbolTypesIds = new HashMap<>();
 
 	public SymbolTypeTable(String programName) {
 		this.programName = programName;

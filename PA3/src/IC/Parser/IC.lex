@@ -142,7 +142,7 @@ StringCharacter = [^\r\n\"\\]
   "%"							 { return NewToken(sym.MOD); }
 	  
   /* string literal */
-  \"                             { string.setLength(0); stringLine = yyline+1; stringColumn = yycolumn + 1; string.append("\""); yybegin(STRING);  }
+  \"                             { string.setLength(0); stringLine = yyline+1; stringColumn = yycolumn + 1; yybegin(STRING);  }
 
   /* numeric literals */
   [0]+{DecIntegerLiteralNoZero}	 { 	throw new LexicalError(String.format("%d:%d : lexical error; Integer must not start with leading zeroes", yyline+1, yycolumn+1),yyline+1); }
@@ -164,15 +164,15 @@ StringCharacter = [^\r\n\"\\]
 }
 
 <STRING> {
-  \"                             { yybegin(YYINITIAL); string.append("\""); return NewToken(sym.QUOTE, string.toString(), "QUOTE"); }
+  \"                             { yybegin(YYINITIAL); return NewToken(sym.QUOTE, string.toString(), "QUOTE"); }
   \t							 { throw new LexicalError(String.format("%d:%d : lexical error; Illegel tab in string literal", yyline + 1, yycolumn+1),yyline+1); }
   
   {StringCharacter}+             { string.append( yytext() ); }
   
   /* escape sequences */
-  "\\t"                          { string.append( "\\t" ); }
-  "\\n"                          { string.append( "\\n" ); }
-  "\\r"                          { string.append( "\\r" ); }
+  "\\t"                          { string.append( "\t" ); }
+  "\\n"                          { string.append( "\n" ); }
+  "\\r"                          { string.append( "\r" ); }
   "\\\""                         { string.append( "\\\"" ); }
   "\\\\"                         { string.append( "\\\\" ); }
   
