@@ -38,7 +38,7 @@ public enum LiteralTypes {
 	},
 	TRUE(true, "Boolean literal", "boolean"),
 	FALSE(false, "Boolean literal", "boolean"),
-	NULL(null, "Literal", "null");
+	NULL(null, "Null literal", "null");
 
     public String getShortName() {
         return shortName;

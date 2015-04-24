@@ -57,11 +57,19 @@ public abstract class Method extends ASTNode {
         builder.append("{");
         List<String> formalsTypeNames = new ArrayList<>();
         for (Formal formal : getFormals()) {
-            formalsTypeNames.add(formal.getType().getName());
+            String typeName = "";
+            typeName += formal.getType().getName();
+            for (int i = 0 ; i < formal.getType().getDimension(); i++){
+                typeName += "[]";
+            }
+            formalsTypeNames.add(typeName);
         }
         builder.append(JoinStringsHelper.joinStrings(formalsTypeNames));
         builder.append(" -> ");
         builder.append(getType().getName());
+        for (int i = 0 ; i < getType().getDimension(); i++){
+            builder.append("[]");
+        }
         builder.append("}");
         return builder.toString();
     }

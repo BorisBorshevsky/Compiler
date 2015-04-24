@@ -309,7 +309,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
     class SymbolOrTables {
         Symbol symbol;
         ASTNode declarationNode;
-        List<StatementBlockSymbolTable> tables = new ArrayList<StatementBlockSymbolTable>();
+        List<StatementBlockSymbolTable> tables = new ArrayList<>();
 
         public SymbolOrTables(Symbol symbol, ASTNode declarationNode) {
             this.symbol = symbol;

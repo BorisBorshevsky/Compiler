@@ -300,7 +300,10 @@ expr ::=
 			NEW:id CLASS_ID:name LP RP  {:
 				RESULT = new NewClass(nameleft,name); :} |
 			NEW:id type:name LB expr:size RB {:
-				RESULT = new NewArray(name,size); :} |
+//                int a = name.getDimension();
+				NewArray n = new NewArray(name,size);
+  //              n.getType().setDimension(a);
+				RESULT = n; :} |
 			location:e {:
 				RESULT = e;:} |
 			call:e {:

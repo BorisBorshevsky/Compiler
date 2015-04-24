@@ -32,4 +32,8 @@ public abstract class Type extends ASTNode {
 	public void incrementDimension() {
 		++dimension;
 	}
+
+    public void setDimension(int dimension) {
+        this.dimension = dimension;
+    }
 }

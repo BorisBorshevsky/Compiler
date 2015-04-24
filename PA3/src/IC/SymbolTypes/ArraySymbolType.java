@@ -8,6 +8,8 @@ public class ArraySymbolType extends SymbolType {
 		this.baseType = baseType;
 	}
 
+
+
 	@Override
 	public String toString() {
 		return baseType + "[]";

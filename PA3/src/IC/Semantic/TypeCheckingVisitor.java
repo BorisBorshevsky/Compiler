@@ -80,29 +80,23 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(VirtualMethod method,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(VirtualMethod method, TypeCheckingVisitorContext context) {
         MethodSymbolType methodSymbolType = visitMethod(method, context);
 
         try {
-            Symbol methodInBaseClass = getCurrentScope().getParent().lookup(
-                method.getName());
-            SymbolType symbolInBaseClassType = getTypeTable().getSymbolById(
-                methodInBaseClass.getTypeId());
+            Symbol methodInBaseClass = getCurrentScope().getParent().lookup(method.getName());
+            SymbolType symbolInBaseClassType = getTypeTable().getSymbolById(methodInBaseClass.getTypeId());
             boolean symbolHidingLegal = false;
             String errorMessage = "";
             if (methodInBaseClass.getKind() == SymbolKind.VIRTUAL_METHOD) {
                 MethodSymbolType methodInBaseClassType = (MethodSymbolType) symbolInBaseClassType;
-                if (methodInBaseClassType.getFormalsTypes().size() != methodSymbolType
-                    .getFormalsTypes().size()) {
+                if (methodInBaseClassType.getFormalsTypes().size() != methodSymbolType.getFormalsTypes().size()) {
                     errorMessage += "Wrong number of arguments";
                 } else {
                     symbolHidingLegal = true;
-                    for (int i = 0; i < methodInBaseClassType.getFormalsTypes()
-                        .size(); ++i) {
+                    for (int i = 0; i < methodInBaseClassType.getFormalsTypes().size(); ++i) {
                         if (!typeComparer.isTypeSameOrExtends(
-                            methodInBaseClassType.getFormalsTypes().get(i),
-                            methodSymbolType.getFormalsTypes().get(i))) {
+                            methodInBaseClassType.getFormalsTypes().get(i), methodSymbolType.getFormalsTypes().get(i))) {
                             symbolHidingLegal = false;
                             errorMessage += "Type of arg"
                                 + i
@@ -117,9 +111,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                         }
                     }
                 }
-                if (!typeComparer.isTypeSameOrExtends(
-                    methodSymbolType.getReturnType(),
-                    methodInBaseClassType.getReturnType())) {
+                if (!typeComparer.isTypeSameOrExtends(methodSymbolType.getReturnType(), methodInBaseClassType.getReturnType())) {
                     errorMessage += "Return type '"
                         + methodSymbolType.getReturnType()
                         + "' is expected to <= '"
@@ -130,8 +122,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                 errorMessage += "Method in base class is marked as static";
             }
             if (!symbolHidingLegal) {
-                errors.add(new SemanticError("Method [" + method.getName()
-                    + "] hides '" + methodInBaseClass.getKind()
+                errors.add(new SemanticError("Method [" + method.getName() + "] hides '" + methodInBaseClass.getKind()
                     + "' in base class. Method signature: "
                     + methodSymbolType + ", base class type: "
                     + symbolInBaseClassType + ". Errors:\n" + errorMessage,
@@ -145,24 +136,20 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(StaticMethod method,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(StaticMethod method, TypeCheckingVisitorContext context) {
         return visitMethod(method, context);
     }
 
     @Override
-    public SymbolType visit(LibraryMethod method,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(LibraryMethod method, TypeCheckingVisitorContext context) {
         return visitMethod(method, context);
     }
 
-    private MethodSymbolType visitMethod(Method method,
-                                         TypeCheckingVisitorContext context) {
+    private MethodSymbolType visitMethod(Method method, TypeCheckingVisitorContext context) {
         symScopeStack.push(method.getMethodSymbolTable());
         int typeId = -1;
         try {
-            typeId = method.getMethodSymbolTable().getParent()
-                .lookup(method.getName()).getTypeId();
+            typeId = method.getMethodSymbolTable().getParent().lookup(method.getName()).getTypeId();
         } catch (SymbolTableException e) {
             // Not supposed to get here, unless there's a bug in
             // SymbolTableBuilder.
@@ -316,6 +303,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
             int symbolTypeId = getCurrentScope().lookup(symbolName).getTypeId();
             symbolType = getTypeTable().getSymbolById(symbolTypeId);
 
+
         } catch (SymbolTableException e) {
             // Not supposed to get here: a variable was just declared.
             symbolType = null;
@@ -326,8 +314,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     @Override
     public SymbolType visit(VariableLocation location, TypeCheckingVisitorContext context) {
         if (location.isExternal()) {
-            SymbolType locationType = location.getLocation().accept(this,
-                context);
+            SymbolType locationType = location.getLocation().accept(this, context);
             if (!(locationType instanceof ClassSymbolType)) {
                 errors.add(new SemanticError(
                     "Location is not a class, can't look for field '"
@@ -349,15 +336,12 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                     return null;
                 }
                 try {
-                    Symbol variableSymbol = classSymbolTable.lookup(location
-                        .getName());
-                    return getTypeTable().getSymbolById(
-                        variableSymbol.getTypeId());
+                    Symbol variableSymbol = classSymbolTable.lookup(location.getName());
+                    return getTypeTable().getSymbolById(variableSymbol.getTypeId());
                 } catch (SymbolTableException e) {
                     // HACK: We didn't do this in ScopeChecking, doing it
                     // here. Checking if location has member of this name.
-                    errors.add(new SemanticError(e.getMessage(), location
-                        .getLine()));
+                    errors.add(new SemanticError(e.getMessage(), location.getLine()));
                     return getVoidType();
                 }
             }
@@ -486,11 +470,9 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
             }
             methodName = call.getName();
         }
-        MethodSymbolType methodSymbolType = (MethodSymbolType) getTypeTable()
-            .getSymbolById(methodSymbol.getTypeId());
+        MethodSymbolType methodSymbolType = (MethodSymbolType) getTypeTable().getSymbolById(methodSymbol.getTypeId());
 
-        checkMethodCallTypeMatching(call, methodName,
-            methodSymbolType.getFormalsTypes(), context);
+        checkMethodCallTypeMatching(call, methodName, methodSymbolType.getFormalsTypes(), context);
 
         return methodSymbolType.getReturnType();
     }
@@ -516,7 +498,9 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     public SymbolType visit(NewArray newArray, TypeCheckingVisitorContext context) {
         SymbolType sizeType = newArray.getSize().accept(this, context);
         checkTypeError(newArray, getPrimitiveType(PrimitiveSymbolTypes.INT), sizeType);
-        SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension() + 1));
+        newArray.getType().incrementDimension();
+//        SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension() + 1));
+        SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension()));
         return arrayType;
     }
 
@@ -642,8 +626,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(ExpressionBlock expressionBlock,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(ExpressionBlock expressionBlock, TypeCheckingVisitorContext context) {
         return expressionBlock.getExpression().accept(this, context);
     }
 

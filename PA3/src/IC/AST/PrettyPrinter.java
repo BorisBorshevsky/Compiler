@@ -1,5 +1,10 @@
 package IC.AST;
 
+import IC.SymbolTypes.ArraySymbolType;
+import IC.SymbolTypes.SymbolType;
+import IC.Symbols.Symbol;
+import IC.Symbols.SymbolTableException;
+
 /**
  * Pretty printing visitor - travels along the AST and prints info about each
  * node, in an easy-to-comprehend format.
@@ -23,7 +28,7 @@ public class PrettyPrinter implements Visitor {
 
     private void indent(StringBuffer output, ASTNode node) {
         output.append("\n");
-        for (int i = 0; i < depth; ++i)
+        for (int i = 0; i < depth * 2; ++i)
             output.append(" ");
         if (node != null)
             output.append(node.getLine() + ": ");
@@ -50,9 +55,10 @@ public class PrettyPrinter implements Visitor {
 
         indent(output, icClass);
         output.append("Declaration of class: " + icClass.getName());
-        output.append(", Type: " + icClass.getName() + ", Symbol table: " + icClass.getClassSymbolTable().getParent().getName());
-        if (icClass.hasSuperClass())
+        if (icClass.hasSuperClass()) {
             output.append(", subclass of " + icClass.getSuperClassName());
+        }
+        output.append(", Type: " + icClass.getName() + ", Symbol table: " + icClass.getClassSymbolTable().getParent().getName());
         depth += 2;
         for (Field field : icClass.getFields()) {
             indent(output, field);
@@ -71,34 +77,30 @@ public class PrettyPrinter implements Visitor {
     public Object visit(PrimitiveType type) {
         StringBuffer output = new StringBuffer();
 
-//        indent(output, type);
-//        output.append("Primitive data type: ");
-        output.append(", Type: ");
-        output.append(type.getName() + ", Symbol table: " + type.getParent().getName());
+        output.append(getTypeStr(type));
+
         for (int i = 0; i < type.getDimension(); i++) {
             output.append("[]");
         }
-
-//        if (type.getDimension() > 0) {
-//            output.append(type.getDimension() + "-dimensional array of ");
-//        }
+        output.append(", Symbol table: " + type.getParent().getName());
         return output.toString();
     }
 
     public Object visit(UserType type) {
         StringBuffer output = new StringBuffer();
 
-//        indent(output, type);
-//        output.append("User-defined data type: ");
-        output.append(", Type: ");
-//        if (type.getDimension() > 0)
-//            output.append(type.getDimension() + "-dimensional array of ");
+
+        output.append(getTypeStr(type));
 
         for (int i = 0; i < type.getDimension(); i++) {
             output.append("[]");
         }
-        output.append(type.getName() + ", Symbol table: " + type.getParent().getName());
+        output.append(", Symbol table: " + type.getParent().getName());
         return output.toString();
+    }
+
+    private static String getTypeStr(Type type) {
+        return ", Type: " + type.getName();
     }
 
     public Object visit(Field field) {
@@ -165,7 +167,9 @@ public class PrettyPrinter implements Visitor {
         StringBuffer output = new StringBuffer();
 
         indent(output, method);
-        output.append("Declaration of static method: " + method.getName() + ", Type: " + method.toString() + ", Symbol table: " + method.getMethodSymbolTable().getParent().getName());
+        output.append("Declaration of static method: " + method.getName());
+        output.append(", Type: " + method.toString());
+        output.append(", Symbol table: " + method.getMethodSymbolTable().getParent().getName());
         depth += 2;
 //        output.append(method.getType().accept(this));
         for (Formal formal : method.getFormals()) {
@@ -251,7 +255,7 @@ public class PrettyPrinter implements Visitor {
         StringBuffer output = new StringBuffer();
 
         indent(output, whileStatement);
-        output.append("While statement Symbol table: " + whileStatement.getParent().getName());
+        output.append("While statement, Symbol table: " + whileStatement.getParent().getName());
         depth += 2;
         whileStatement.getCondition().setParent(whileStatement.getParent());
         output.append(whileStatement.getCondition().accept(this));
@@ -266,6 +270,7 @@ public class PrettyPrinter implements Visitor {
 
         indent(output, breakStatement);
         output.append("Break statement");
+        output.append(", Symbol table: " + breakStatement.getParent().getName());
         return output.toString();
     }
 
@@ -303,7 +308,7 @@ public class PrettyPrinter implements Visitor {
         ++depth;
         localVariable.getType().setParent(localVariable.getParent());
         output.append(localVariable.getType().accept(this));
-        output.append(", Symbol table: " + localVariable.getParent().getName());
+ //       output.append(", Symbol table: " + localVariable.getParent().getName());
         if (localVariable.hasInitValue()) {
             localVariable.getInitValue().setParent(localVariable.getParent());
             output.append(localVariable.getInitValue().accept(this));
@@ -315,31 +320,55 @@ public class PrettyPrinter implements Visitor {
 
     public Object visit(VariableLocation location) {
         StringBuffer output = new StringBuffer();
+        try {
+            indent(output, location);
+            int symbolTypeId = location.getParent().lookup(location.getName()).getTypeId();
+            SymbolType symbolType = location.getParent().getTypeTable().getSymbolById(symbolTypeId);
+            output.append("Reference to variable: " + location.getName());
 
-        indent(output, location);
-        output.append("Reference to variable: " + location.getName() + ", Type: " + "ERRRORRRRRRRRRRR");
-        if (location.isExternal())
-            output.append(", in external scope");
-        if (location.isExternal()) {
-            ++depth;
-            location.getLocation().setParent(location.getParent());
-            output.append(location.getLocation().accept(this));
-            --depth;
+            if (location.isExternal()) {
+                output.append(", in external scope");
+            }
+            output.append(", Type: " + symbolType.toString());
+            output.append(", Symbol table: " + location.getParent().getName());
+
+//        int symbolTypeId = getCurrentScope().lookup(symbolName).getTypeId();
+//        symbolType = getTypeTable().getSymbolById(symbolTypeId);
+
+
+            if (location.isExternal()) {
+                ++depth;
+                location.getLocation().setParent(location.getParent());
+                output.append(location.getLocation().accept(this));
+                --depth;
+            }
+
+        } catch (SymbolTableException e) {
+
+            //shoud not happend
+            e.printStackTrace();
         }
         return output.toString();
     }
 
     public Object visit(ArrayLocation location) {
         StringBuffer output = new StringBuffer();
+        try {
+            indent(output, location);
+            output.append("Reference to array");
+            int symbolTypeId = location.getParent().lookup(((VariableLocation) location.getArray()).getName()).getTypeId();
+            SymbolType symbolType = location.getParent().getTypeTable().getSymbolById(symbolTypeId);
+            output.append(", Type: " + ((ArraySymbolType)symbolType).getBaseType());
+            output.append(", Symbol table: " + location.getParent().getName());
+            depth += 2;
+            location.getArray().setParent(location.getParent());
+            output.append(location.getArray().accept(this));
+            location.getIndex().setParent(location.getParent());
+            output.append(location.getIndex().accept(this));
+            depth -= 2;
+        }catch (SymbolTableException ste){
 
-        indent(output, location);
-        output.append("Reference to array");
-        depth += 2;
-        location.getArray().setParent(location.getParent());
-        output.append(location.getArray().accept(this));
-        location.getIndex().setParent(location.getParent());
-        output.append(location.getIndex().accept(this));
-        depth -= 2;
+        }
         return output.toString();
     }
 
@@ -393,6 +422,11 @@ public class PrettyPrinter implements Visitor {
 
         indent(output, newArray);
         output.append("Array allocation");
+
+//        int symbolTypeId = newArray.getParent().lookup(newArray.getName()).getTypeId();
+//        SymbolType symbolType = location.getParent().getTypeTable().getSymbolById(symbolTypeId);
+//        output.append("Reference to variable: " + location.getName());
+
         depth += 2;
         newArray.getType().setParent(newArray.getParent());
         output.append(newArray.getType().accept(this));
@@ -418,6 +452,8 @@ public class PrettyPrinter implements Visitor {
 
         indent(output, binaryOp);
         output.append("Mathematical binary operation: " + binaryOp.getOperator().getDescription());
+        output.append(", Type: " + "int");
+        output.append(", Symbol table: " + binaryOp.getParent().getName());
         depth += 2;
         binaryOp.getFirstOperand().setParent(binaryOp.getParent());
         output.append(binaryOp.getFirstOperand().accept(this));
