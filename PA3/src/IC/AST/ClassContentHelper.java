@@ -8,8 +8,8 @@ public class ClassContentHelper {
     private List<Method> methods;
 
     public ClassContentHelper(int line) {
-        this.fields = new ArrayList<Field>();
-        this.methods = new ArrayList<Method>();
+        this.fields = new ArrayList<>();
+        this.methods = new ArrayList<>();
     }
 
     public List<Field> getFields() {

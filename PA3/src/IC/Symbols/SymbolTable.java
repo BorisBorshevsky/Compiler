@@ -5,8 +5,11 @@ import IC.SymbolTypes.SymbolTypeTable;
 
 import java.util.*;
 
+/**
+ * base for all symbol tables
+ */
 public abstract class SymbolTable {
-    protected Map<String, Symbol> symbols = new HashMap<>();
+    private Map<String, Symbol> symbols = new HashMap<>();
     private SymbolTable parent;
     private List<SymbolTable> children = new ArrayList<>();
     private String name;
@@ -27,14 +30,25 @@ public abstract class SymbolTable {
         return nameForStatmentPrint;
     }
 
+    /**
+     * add symbol to symbol table
+     * @param newSymbol
+     * @throws SymbolTableException
+     */
     public void insert(Symbol newSymbol) throws SymbolTableException {
-        if (symbols.containsKey(newSymbol.name)) {
-            throw new SymbolTableException("A symbol with this name already exists in this scope: " + newSymbol.name);
+        if (symbols.containsKey(newSymbol.getName())) {
+            throw new SymbolTableException("A symbol with this name already exists in this scope: " + newSymbol.getName());
         }
-        symbols.put(newSymbol.name, newSymbol);
+        symbols.put(newSymbol.getName(), newSymbol);
         orderedSymbols.add(newSymbol);
     }
 
+    /**
+     * find symbol in symbol table
+     * @param name
+     * @return
+     * @throws SymbolTableException
+     */
     public Symbol lookup(String name) throws SymbolTableException {
         if (symbols.containsKey(name)) {
             return symbols.get(name);
@@ -68,29 +82,28 @@ public abstract class SymbolTable {
         builder.append(this.getSymbolTableTypeString());
         builder.append(": ");
         builder.append(getName());
-
         builder.append("\n");
 
         for (Symbol symbol : orderedSymbols) {
             builder.append("    ");
-            builder.append(symbol.kind);
+            builder.append(symbol.getKind());
             builder.append(": ");
-            switch (symbol.kind) {
+            switch (symbol.getKind()) {
                 case CLASS:
-                    builder.append(symbol.name);
+                    builder.append(symbol.getName());
                     break;
                 case FIELD:
                 case LOCAL_VARIABLE:
                 case PARAMETER:
-                    builder.append(this.getTypeTable().getSymbolById(symbol.symbolTypeId));
+                    builder.append(this.getTypeTable().getSymbolById(symbol.getSymbolTypeId()));
                     builder.append(" ");
-                    builder.append(symbol.name);
+                    builder.append(symbol.getName());
                     break;
                 case STATIC_METHOD:
                 case VIRTUAL_METHOD:
-                    builder.append(symbol.name);
+                    builder.append(symbol.getName());
                     builder.append(" ");
-                    builder.append(this.getTypeTable().getSymbolById(symbol.symbolTypeId));
+                    builder.append(this.getTypeTable().getSymbolById(symbol.getSymbolTypeId()));
                     break;
                 default:
                     break;

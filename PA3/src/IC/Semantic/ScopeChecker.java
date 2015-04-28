@@ -22,7 +22,7 @@ public class ScopeChecker implements Visitor {
         return errors;
     }
 
-    private boolean verifySymbolIsOfKind(ASTNode node, String name, SymbolKind... kinds) {
+    private boolean verifySymbolIsOfKind(ASTNode node, String name, Symbol.Kind... kinds) {
         Symbol symbol;
         try {
             symbol = getCurrentScope().lookup(name);
@@ -37,7 +37,7 @@ public class ScopeChecker implements Visitor {
         return verifySymbolIsOfKind(node, symbol, kinds);
     }
 
-    private boolean verifySymbolInOtherScopeIsOfKind(String otherScopeName, String symbolName, ASTNode node, SymbolKind... kinds) {
+    private boolean verifySymbolInOtherScopeIsOfKind(String otherScopeName, String symbolName, ASTNode node, Symbol.Kind... kinds) {
         Symbol symbol;
         try {
             SymbolTable otherScope = getCurrentScope().lookupScope(otherScopeName);
@@ -49,7 +49,7 @@ public class ScopeChecker implements Visitor {
         return verifySymbolIsOfKind(node, symbol, kinds);
     }
 
-    private boolean verifySymbolIsOfKind(ASTNode node, Symbol symbol, SymbolKind... kinds) {
+    private boolean verifySymbolIsOfKind(ASTNode node, Symbol symbol, Symbol.Kind... kinds) {
         if (!Arrays.asList(kinds).contains(symbol.getKind())) {
             String kindsStr = StringUtils.joinStrings(Arrays.asList(kinds));
             errors.add(new SemanticError("Symbol is not of kind '" + kindsStr + "'", node.getLine(), symbol.getName()));
@@ -95,6 +95,11 @@ public class ScopeChecker implements Visitor {
         return true;
     }
 
+
+    /**
+     * checks for mase class members
+     * @param field
+     */
     private void verifyFieldDoesntHideBaseClassMember(Field field) {
         SymbolTable classScope = getCurrentScope();
         try {
@@ -153,7 +158,7 @@ public class ScopeChecker implements Visitor {
 
     @Override
     public Object visit(UserType type) {
-        verifySymbolIsOfKind(type, type.getName(), SymbolKind.CLASS);
+        verifySymbolIsOfKind(type, type.getName(), Symbol.Kind.CLASS);
         return true;
     }
 
@@ -230,9 +235,7 @@ public class ScopeChecker implements Visitor {
         if (location.isExternal()) {
             location.getLocation().accept(this);
         } else {
-            verifySymbolIsOfKind(location, location.getName(),
-                SymbolKind.LOCAL_VARIABLE, SymbolKind.PARAMETER,
-                SymbolKind.FIELD);
+            verifySymbolIsOfKind(location, location.getName(), Symbol.Kind.LOCAL_VARIABLE, Symbol.Kind.PARAMETER, Symbol.Kind.FIELD);
         }
 
         return true;
@@ -250,11 +253,10 @@ public class ScopeChecker implements Visitor {
         for (Expression arg : call.getArguments()) {
             arg.accept(this);
         }
-        if (!verifySymbolIsOfKind(call, call.getClassName(), SymbolKind.CLASS)) {
+        if (!verifySymbolIsOfKind(call, call.getClassName(), Symbol.Kind.CLASS)) {
             return true;
         }
-        verifySymbolInOtherScopeIsOfKind(call.getClassName(), call.getName(),
-            call, SymbolKind.STATIC_METHOD);
+        verifySymbolInOtherScopeIsOfKind(call.getClassName(), call.getName(), call, Symbol.Kind.STATIC_METHOD);
         return true;
     }
 
@@ -267,7 +269,7 @@ public class ScopeChecker implements Visitor {
             call.getLocation().accept(this);
 
         } else {
-            verifySymbolIsOfKind(call, call.getName(), SymbolKind.VIRTUAL_METHOD, SymbolKind.STATIC_METHOD);
+            verifySymbolIsOfKind(call, call.getName(), Symbol.Kind.VIRTUAL_METHOD, Symbol.Kind.STATIC_METHOD);
         }
 
         return true;
@@ -280,7 +282,7 @@ public class ScopeChecker implements Visitor {
 
     @Override
     public Object visit(NewClass newClass) {
-        verifySymbolIsOfKind(newClass, newClass.getName(), SymbolKind.CLASS);
+        verifySymbolIsOfKind(newClass, newClass.getName(), Symbol.Kind.CLASS);
         return true;
     }
 
@@ -345,9 +347,9 @@ public class ScopeChecker implements Visitor {
     }
 
     /**
-     * Part of the hack described above. This checks if the symbol that was
-     * currently found is in the instance-scope of a class, while the call has
-     * been made from the static-scope.
+     *  This checks if the symbol that was currently found is in the instance-scope of a class, while the call has been made from the static-scope
+     * @param symbol
+     * @return
      */
     private boolean currentScopeIsStaticAndSymbolIsVirtualMethodOrField(Symbol symbol) {
         Symbol scopeSymbol;
@@ -356,8 +358,8 @@ public class ScopeChecker implements Visitor {
         } catch (SymbolTableException e) {
             return false;
         }
-        boolean currentScopeIsStatic = scopeSymbol != null && scopeSymbol.getKind() == SymbolKind.STATIC_METHOD;
-        boolean symbolIsNonStaticClassMember = symbol.getKind() == SymbolKind.FIELD || symbol.getKind() == SymbolKind.VIRTUAL_METHOD;
+        boolean currentScopeIsStatic = scopeSymbol != null && scopeSymbol.getKind() == Symbol.Kind.STATIC_METHOD;
+        boolean symbolIsNonStaticClassMember = symbol.getKind() == Symbol.Kind.FIELD || symbol.getKind() == Symbol.Kind.VIRTUAL_METHOD;
         return currentScopeIsStatic && symbolIsNonStaticClassMember;
     }
 

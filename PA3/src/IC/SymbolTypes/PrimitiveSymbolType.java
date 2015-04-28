@@ -57,11 +57,8 @@ public class PrimitiveSymbolType extends SymbolType {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof PrimitiveSymbolType)) {
-			return false;
-		}
-		return ((PrimitiveSymbolType) obj).type == this.type;
-	}
+        return obj instanceof PrimitiveSymbolType && ((PrimitiveSymbolType) obj).type == this.type;
+    }
 
 	@Override
 	public int hashCode() {

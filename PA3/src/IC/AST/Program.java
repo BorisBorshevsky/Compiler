@@ -38,7 +38,7 @@ public class Program extends ASTNode {
 	}
 
 
-    GlobalSymbolTable symbolTable;
+    private GlobalSymbolTable symbolTable;
 
     public GlobalSymbolTable getGlobalSymbolTable() {
         return symbolTable;

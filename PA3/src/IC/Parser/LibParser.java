@@ -274,7 +274,7 @@ class CUP$LibParser$actions {
               Type RESULT =null;
 		int strKeyleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).left;
 		int strKeyright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).right;
-		Object strKey = (Object)((java_cup.runtime.Symbol) CUP$LibParser$stack.peek()).value;
+		Object strKey = ((Symbol) CUP$LibParser$stack.peek()).value;
 		 RESULT = new PrimitiveType(strKeyleft, IC.DataTypes.STRING); 
               CUP$LibParser$result = parser.getSymbolFactory().newSymbol("type",7, ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), RESULT);
             }
@@ -286,7 +286,7 @@ class CUP$LibParser$actions {
               Type RESULT =null;
 		int boolKeyleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).left;
 		int boolKeyright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).right;
-		Object boolKey = (Object)((java_cup.runtime.Symbol) CUP$LibParser$stack.peek()).value;
+		Object boolKey = ((Symbol) CUP$LibParser$stack.peek()).value;
 		 RESULT = new PrimitiveType(boolKeyleft, IC.DataTypes.BOOLEAN); 
               CUP$LibParser$result = parser.getSymbolFactory().newSymbol("type",7, ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), RESULT);
             }
@@ -298,7 +298,7 @@ class CUP$LibParser$actions {
               Type RESULT =null;
 		int intKeyleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).left;
 		int intKeyright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).right;
-		Object intKey = (Object)((java_cup.runtime.Symbol) CUP$LibParser$stack.peek()).value;
+		Object intKey = ((Symbol) CUP$LibParser$stack.peek()).value;
 		 RESULT = new PrimitiveType(intKeyleft, IC.DataTypes.INT); 
               CUP$LibParser$result = parser.getSymbolFactory().newSymbol("type",7, ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), RESULT);
             }
@@ -334,7 +334,7 @@ class CUP$LibParser$actions {
               Type RESULT =null;
 		int vleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).left;
 		int vright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()).right;
-		Object v = (Object)((java_cup.runtime.Symbol) CUP$LibParser$stack.peek()).value;
+		Object v = ((Symbol) CUP$LibParser$stack.peek()).value;
 		 RESULT = new PrimitiveType(vleft, IC.DataTypes.VOID); 
               CUP$LibParser$result = parser.getSymbolFactory().newSymbol("method_type",8, ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), ((java_cup.runtime.Symbol)CUP$LibParser$stack.peek()), RESULT);
             }
@@ -402,7 +402,7 @@ class CUP$LibParser$actions {
               ICClass RESULT =null;
 		int ckleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.elementAt(CUP$LibParser$top-4)).left;
 		int ckright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.elementAt(CUP$LibParser$top-4)).right;
-		Object ck = (Object)((java_cup.runtime.Symbol) CUP$LibParser$stack.elementAt(CUP$LibParser$top-4)).value;
+		Object ck = ((Symbol) CUP$LibParser$stack.elementAt(CUP$LibParser$top-4)).value;
 		int cidleft = ((java_cup.runtime.Symbol)CUP$LibParser$stack.elementAt(CUP$LibParser$top-3)).left;
 		int cidright = ((java_cup.runtime.Symbol)CUP$LibParser$stack.elementAt(CUP$LibParser$top-3)).right;
 		String cid = (String)((java_cup.runtime.Symbol) CUP$LibParser$stack.elementAt(CUP$LibParser$top-3)).value;

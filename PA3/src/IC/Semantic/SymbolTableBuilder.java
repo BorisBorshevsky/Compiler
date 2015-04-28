@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *Traverses the AST, builds all the symbol table
+ */
 public class SymbolTableBuilder implements Visitor {
 
     private String programName;
@@ -35,7 +38,7 @@ public class SymbolTableBuilder implements Visitor {
         Map<String, ClassSymbolTable> symbolTableForClass = new HashMap<>();
 
         for (ICClass clazz : program.getClasses()) {
-            Symbol classSymbol = new Symbol(clazz.getName(), SymbolKind.CLASS, typeTable.getSymbolTypeId(clazz), clazz.getLine());
+            Symbol classSymbol = new Symbol(clazz.getName(), Symbol.Kind.CLASS, typeTable.getSymbolTypeId(clazz), clazz.getLine());
 
             insertSymbolToTable(globalTable, clazz, classSymbol);
 
@@ -74,16 +77,16 @@ public class SymbolTableBuilder implements Visitor {
         ClassSymbolTable classTable = new ClassSymbolTable(icClass.getName(), typeTable);
         icClass.setClassSymbolTable(classTable);
         for (Field field : icClass.getFields()) {
-            Symbol fieldSymbol = new Symbol(field.getName(), SymbolKind.FIELD, typeTable.getSymbolTypeId(field.getType(), field.getType().getDimension()), field.getLine());
+            Symbol fieldSymbol = new Symbol(field.getName(), Symbol.Kind.FIELD, typeTable.getSymbolTypeId(field.getType(), field.getType().getDimension()), field.getLine());
             insertSymbolToTable(classTable, field, fieldSymbol);
         }
 
         for (Method method : icClass.getMethods()) {
             Symbol methodSymbol;
             if (method instanceof VirtualMethod) {
-                methodSymbol = new Symbol(method.getName(), SymbolKind.VIRTUAL_METHOD, typeTable.getSymbolTypeId(method), method.getLine());
+                methodSymbol = new Symbol(method.getName(), Symbol.Kind.VIRTUAL_METHOD, typeTable.getSymbolTypeId(method), method.getLine());
             } else { // method is a StaticMethod or a LibraryMethod)
-                methodSymbol = new Symbol(method.getName(), SymbolKind.STATIC_METHOD, typeTable.getSymbolTypeId(method), method.getLine());
+                methodSymbol = new Symbol(method.getName(), Symbol.Kind.STATIC_METHOD, typeTable.getSymbolTypeId(method), method.getLine());
             }
             MethodSymbolTable methodTable = (MethodSymbolTable) method.accept(this);
             classTable.addChild(methodTable);
@@ -107,7 +110,7 @@ public class SymbolTableBuilder implements Visitor {
         MethodSymbolTable table = new MethodSymbolTable(method.getName(), typeTable);
         method.setMethodSymbolTable(table);
         for (Formal formal : method.getFormals()) {
-            Symbol symbol = new Symbol(formal.getName(), SymbolKind.PARAMETER, typeTable.getSymbolTypeId(formal.getType(), formal.getType().getDimension()), formal.getLine());
+            Symbol symbol = new Symbol(formal.getName(), Symbol.Kind.PARAMETER, typeTable.getSymbolTypeId(formal.getType(), formal.getType().getDimension()), formal.getLine());
             insertSymbolToTable(table, formal, symbol);
         }
         getSymbolsAndChildTablesFromStatementList(table, method.getStatements());
@@ -218,7 +221,7 @@ public class SymbolTableBuilder implements Visitor {
 
     @Override
     public SymbolOrTables visit(LocalVariable localVariable) {
-        Symbol symbol = new Symbol(localVariable.getName(), SymbolKind.LOCAL_VARIABLE, typeTable.getSymbolTypeId(localVariable.getType(), localVariable.getType().getDimension()), localVariable.getLine());
+        Symbol symbol = new Symbol(localVariable.getName(), Symbol.Kind.LOCAL_VARIABLE, typeTable.getSymbolTypeId(localVariable.getType(), localVariable.getType().getDimension()), localVariable.getLine());
         return new SymbolOrTables(symbol, localVariable);
     }
 
@@ -328,9 +331,7 @@ public class SymbolTableBuilder implements Visitor {
             if (symbol != null) {
                 insertSymbolToTable(symbolTable, declarationNode, symbol);
             }
-            for (StatementBlockSymbolTable table : tables) {
-                symbolTable.addChild(table);
-            }
+            tables.forEach(symbolTable::addChild);
         }
 
         public void addTableFrom(SymbolOrTables fromOperation) {

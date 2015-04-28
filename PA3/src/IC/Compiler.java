@@ -15,8 +15,6 @@ import java.util.List;
  * Main class of the jar project
  */
 public class Compiler {
-
-
     private static String icFileName;
     private static String libFileName;
     private static boolean printAst;
@@ -33,26 +31,22 @@ public class Compiler {
         try { //main try
 
             ICClass libRootSymbol = null;
-            Program icRootClass = null;
+            Program icRootClass;
 
             if (libFileName != null) {
                 libRootSymbol = (ICClass) parseLibFile(libFileName);
             }
-
             icRootClass = parseMainFile();
 
             if (icRootClass != null) {
-
-                semanticChecks(libRootSymbol, icRootClass);
-
-                if (printAst) {
-                    PrettyPrinter prettyPrinter = new PrettyPrinter(icFileName);
-                    prettyPrinter.isEnabledASTLibraryPrinting(false);
-                    String output = (String) icRootClass.accept(prettyPrinter);
-                    System.out.println(output);
+                if (semanticChecks(libRootSymbol, icRootClass)) {
+                    if (printAst) {
+                        PrettyPrinter prettyPrinter = new PrettyPrinter(icFileName);
+                        prettyPrinter.isEnabledASTLibraryPrinting(false);
+                        String output = (String) icRootClass.accept(prettyPrinter);
+                        System.out.println(output);
+                    }
                 }
-
-
             }
 
         } catch (FileNotFoundException e) {
@@ -64,6 +58,14 @@ public class Compiler {
         }
     }
 
+    /**
+     * does semntic checks and populates type tables
+     *
+     * @param libRootSymbol library
+     * @param icRootClass   root file
+     * @return is succeded
+     * @throws IOException file not found
+     */
     private static boolean semanticChecks(ICClass libRootSymbol, Program icRootClass) throws IOException {
         //semantic checks
 
@@ -95,8 +97,8 @@ public class Compiler {
 
 
         //single main check
-        SingleMainFunctionValidator mainValidator = new SingleMainFunctionValidator();
-        SemanticError mainValidatorResult = (SemanticError) mainValidator.visit(icRootClass);
+        MainFunctionValidator mainValidator = new MainFunctionValidator();
+        SemanticError mainValidatorResult = mainValidator.visit(icRootClass);
         if (mainValidatorResult != null) {
             printError(icFileName, mainValidatorResult);
             return false;
@@ -117,6 +119,13 @@ public class Compiler {
         return true;
     }
 
+
+    /**
+     * parse the main IC file
+     *
+     * @return Program (symbol)
+     * @throws Exception
+     */
     private static Program parseMainFile() throws Exception {
         FileReader programFile = new FileReader(icFileName);
         Lexer scanner = new Lexer(programFile);
@@ -138,6 +147,13 @@ public class Compiler {
         return null;
     }
 
+    /**
+     * parse the library file
+     *
+     * @param libFileName
+     * @return
+     * @throws Exception
+     */
     private static Object parseLibFile(String libFileName) throws Exception {
         FileReader libFile = new FileReader(libFileName);
         Lexer libLexer = new Lexer(libFile);

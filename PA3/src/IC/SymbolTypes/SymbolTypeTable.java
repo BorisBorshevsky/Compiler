@@ -4,11 +4,15 @@ import IC.AST.*;
 import IC.SymbolTypes.PrimitiveSymbolType.PrimitiveSymbolTypes;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * represents table of all symbol types
+ */
 public class SymbolTypeTable {
-    String programName;
-    List<SymbolType> symbolTypes = new ArrayList<>();
-    Map<SymbolType, Integer> symbolTypesIds = new HashMap<>();
+    private String programName;
+    private List<SymbolType> symbolTypes = new ArrayList<>();
+    private Map<SymbolType, Integer> symbolTypesIds = new HashMap<>();
 
     public SymbolTypeTable(String programName) {
         this.programName = programName;
@@ -21,15 +25,9 @@ public class SymbolTypeTable {
         }
     }
 
-    // ///////////////
-    // public methods: get SymbolType instances
-
     public SymbolType getSymbolById(int id) {
         return symbolTypes.get(id - 1);
     }
-
-    // ///////////////
-    // public methods: create SymbolType instances.
 
     public int getSymbolTypeId(Type type, int dimension) {
         return addOrGetSymbolTypeId(createSymbolType(type, dimension));
@@ -42,9 +40,6 @@ public class SymbolTypeTable {
     public int getSymbolTypeId(ICClass clazz) {
         return addOrGetSymbolTypeId(createSymbolType(clazz));
     }
-
-    // ////////////////
-    // Private methods
 
     private SymbolType createSymbolType(ICClass clazz) {
         return new ClassSymbolType(clazz.getName());
@@ -61,14 +56,9 @@ public class SymbolTypeTable {
 
     private SymbolType createSymbolType(Method method) {
         // Create types for formals
-        List<SymbolType> formalsTypes = new ArrayList<SymbolType>();
-        for (Formal formal : method.getFormals()) {
-            formalsTypes.add(getSymbolById(getSymbolTypeId(formal.getType(),
-                formal.getType().getDimension())));
-        }
+        List<SymbolType> formalsTypes = method.getFormals().stream().map(formal -> getSymbolById(getSymbolTypeId(formal.getType(), formal.getType().getDimension()))).collect(Collectors.toList());
         // Create type for return type
-        SymbolType returnType = getSymbolById(getSymbolTypeId(method.getType(),
-            method.getType().getDimension()));
+        SymbolType returnType = getSymbolById(getSymbolTypeId(method.getType(), method.getType().getDimension()));
         // Create type for method
         return new MethodSymbolType(formalsTypes, returnType);
     }
@@ -82,8 +72,7 @@ public class SymbolTypeTable {
     private SymbolType createSymbolType(SymbolType basicType, int dimension) {
         // An array T[][] is created with a base type T[].
         if (dimension > 0) {
-            return addOrGetSymbolType(new ArraySymbolType(createSymbolType(
-                basicType, dimension - 1)));
+            return addOrGetSymbolType(new ArraySymbolType(createSymbolType(basicType, dimension - 1)));
         }
         return addOrGetSymbolType(basicType);
     }
@@ -106,9 +95,9 @@ public class SymbolTypeTable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Type Table: ");
-        sb.append(programName);
+        sb.append(getProgramName());
         sb.append("\n");
-        List<SymbolType> sorted = new ArrayList<SymbolType>(symbolTypes);
+        List<SymbolType> sorted = new ArrayList<>(symbolTypes);
         Collections.sort(sorted, new Comparator<SymbolType>() {
             @Override
             public int compare(SymbolType o1, SymbolType o2) {

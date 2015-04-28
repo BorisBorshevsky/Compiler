@@ -7,8 +7,13 @@ import IC.Parser.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SingleMainFunctionValidator implements Visitor {
+public class MainFunctionValidator implements Visitor {
 
+    /**
+     * counts all the main methods in the program
+     * @param program
+     * @return
+     */
     @Override
     public SemanticError visit(Program program) {
         List<String> classesWithMain = new ArrayList<>();

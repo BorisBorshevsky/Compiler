@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class thea traversing the AST to validate Break, continue and this context
+ */
 public class BreakContinueValidator implements Visitor {
 
     private List<SemanticError> errors = new ArrayList<>();
@@ -115,6 +118,11 @@ public class BreakContinueValidator implements Visitor {
         return null;
     }
 
+    /**
+     * add while statment to context
+     * @param whileStatement
+     * @return
+     */
     @Override
     public Object visit(While whileStatement) {
         incrementCounter(While.class);
@@ -123,6 +131,11 @@ public class BreakContinueValidator implements Visitor {
         return null;
     }
 
+    /**
+     * checks break context
+     * @param breakStatement
+     * @return
+     */
     @Override
     public Object visit(Break breakStatement) {
         if (getCounter(While.class) == 0) {
@@ -131,6 +144,11 @@ public class BreakContinueValidator implements Visitor {
         return null;
     }
 
+    /**
+     * checks continue context
+     * @param continueStatement
+     * @return
+     */
     @Override
     public Object visit(Continue continueStatement) {
         if (getCounter(While.class) == 0) {
@@ -186,6 +204,11 @@ public class BreakContinueValidator implements Visitor {
         return null;
     }
 
+    /**
+     * checks "this" context
+     * @param thisExpression
+     * @return
+     */
     @Override
     public Object visit(This thisExpression) {
         if (getCounter(VirtualMethod.class) == 0) {

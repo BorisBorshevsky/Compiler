@@ -84,7 +84,7 @@ public class Token extends Symbol {
     /**
      * Converts an int token code into the name of the
      * token by reflection on the cup symbol class/interface sym
-     * @param token
+     * @param token token id
      */
     protected String getTokenName(int token) {
         try {

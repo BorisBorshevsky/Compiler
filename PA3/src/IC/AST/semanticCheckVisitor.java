@@ -3,7 +3,6 @@ package IC.AST;
 /**
  * AST visitor interface. Declares methods for visiting each type of AST node.
  * 
- * @author Tovi Almozlino
  */
 public interface semanticCheckVisitor<D, U> {
 

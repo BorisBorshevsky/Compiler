@@ -4,9 +4,10 @@ import IC.Parser.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MethodSymbolType extends SymbolType {
-	List<SymbolType> formalsTypes = new ArrayList<SymbolType>();
+	List<SymbolType> formalsTypes = new ArrayList<>();
 	private SymbolType returnType;
 
 	public MethodSymbolType(List<SymbolType> formalsTypes, SymbolType returnType) {
@@ -18,11 +19,8 @@ public class MethodSymbolType extends SymbolType {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{");
-		List<String> formalsTypeNames = new ArrayList<String>();
-		for (SymbolType typeName : formalsTypes) {
-			formalsTypeNames.add(typeName.toString());
-		}
-		builder.append(StringUtils.joinStrings(formalsTypeNames));
+		List<String> formalsTypeNames = formalsTypes.stream().map(SymbolType::toString).collect(Collectors.toList());
+        builder.append(StringUtils.joinStrings(formalsTypeNames));
 		builder.append(" -> ");
 		builder.append(getReturnType());
 		builder.append("}");

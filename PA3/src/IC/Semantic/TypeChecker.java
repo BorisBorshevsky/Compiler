@@ -4,7 +4,7 @@ import IC.AST.*;
 import IC.SymbolTypes.*;
 import IC.SymbolTypes.PrimitiveSymbolType.PrimitiveSymbolTypes;
 import IC.Symbols.Symbol;
-import IC.Symbols.SymbolKind;
+
 import IC.Symbols.SymbolTable;
 import IC.Symbols.SymbolTableException;
 import IC.UnaryOps;
@@ -15,8 +15,8 @@ import java.util.Stack;
 
 public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, SymbolType> {
 
-    private Stack<SymbolTable> symScopeStack = new Stack<SymbolTable>();
-    private List<SemanticError> errors = new ArrayList<SemanticError>();
+    private Stack<SymbolTable> symScopeStack = new Stack<>();
+    private List<SemanticError> errors = new ArrayList<>();
     private TypeCompareUtil typeCompareUtil;
 
     public List<SemanticError> getErrors() {
@@ -47,7 +47,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
         } catch (SymbolTableException e) {
             return null;
         }
-        context.currentClassSymbolType = (ClassSymbolType) getTypeTable().getSymbolById(classSymbol.getTypeId());
+        context.setCurrentClassSymbolType((ClassSymbolType) getTypeTable().getSymbolById(classSymbol.getTypeId()));
         // Visit child nodes.
         for (Method meth : clazz.getMethods()) {
             meth.accept(this, context);
@@ -55,7 +55,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
         for (Field fld : clazz.getFields()) {
             fld.accept(this, context);
         }
-        context.currentClassSymbolType = null;
+        context.setCurrentClassSymbolType(null);
         symScopeStack.pop();
         return null;
     }
@@ -74,7 +74,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
             SymbolType symbolInBaseClassType = getTypeTable().getSymbolById(methodInBaseClass.getTypeId());
             boolean symbolHidingLegal = false;
             String errorMessage = "";
-            if (methodInBaseClass.getKind() == SymbolKind.VIRTUAL_METHOD) {
+            if (methodInBaseClass.getKind() == Symbol.Kind.VIRTUAL_METHOD) {
                 MethodSymbolType methodInBaseClassType = (MethodSymbolType) symbolInBaseClassType;
                 if (methodInBaseClassType.getFormalsTypes().size() != methodSymbolType.getFormalsTypes().size()) {
                     errorMessage += "Wrong number of arguments";
@@ -100,7 +100,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
                     errorMessage += "Return type '" + methodSymbolType.getReturnType() + "' is expected to <= '" + methodInBaseClassType.getReturnType() + "'\n";
                     symbolHidingLegal = false;
                 }
-            } else if (methodInBaseClass.getKind() == SymbolKind.STATIC_METHOD) {
+            } else if (methodInBaseClass.getKind() == Symbol.Kind.STATIC_METHOD) {
                 errorMessage += "Method in base class is marked as static";
             }
             if (!symbolHidingLegal) {
@@ -132,11 +132,11 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
             e.printStackTrace();
         }
         MethodSymbolType symbolType = (MethodSymbolType) getTypeTable().getSymbolById(typeId);
-        context.currentMethodSymbolType = symbolType;
+        context.setCurrentMethodSymbolType(symbolType);
         for (Statement stmnt : method.getStatements()) {
             stmnt.accept(this, context);
         }
-        context.currentMethodSymbolType = null;
+        context.setCurrentMethodSymbolType(null);
         symScopeStack.pop();
         return symbolType;
     }
@@ -193,15 +193,15 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
 
     @Override
     public SymbolType visit(Return returnStatement, TypeCheckingContext context) {
-        SymbolType returnType = context.currentMethodSymbolType.getReturnType();
+        SymbolType returnType = context.getCurrentMethodSymbolType().getReturnType();
         // 1. void method, with return [expr]; -- Error
         // 2. void method, with return; -- OK
         // 3. non-void method, with return [expr] -- Check matching types
         // 4. non-void method, with return; -- Error
         if (returnStatement.hasValue()
-            && context.currentMethodSymbolType.getReturnType().equals(getVoidType())) {
+            && context.getCurrentMethodSymbolType().getReturnType().equals(getVoidType())) {
             errors.add(new SemanticError("A 'void' method is trying to return a value", returnStatement.getLine()));
-        } else if (!returnStatement.hasValue() && !context.currentMethodSymbolType.getReturnType().equals(getVoidType())) {
+        } else if (!returnStatement.hasValue() && !context.getCurrentMethodSymbolType().getReturnType().equals(getVoidType())) {
             errors.add(new SemanticError("A non-'void' method should return a value", returnStatement.getLine()));
         } else if (returnStatement.hasValue()) {
             SymbolType expression = returnStatement.getValue().accept(this, context);
@@ -341,7 +341,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
     }
 
     private boolean checkMethodCallTypeMatching(Call call, String methodName, List<SymbolType> argumentsExpectedTypes, TypeCheckingContext context) {
-        List<SymbolType> argumentsTypes = new ArrayList<SymbolType>();
+        List<SymbolType> argumentsTypes = new ArrayList<>();
         for (Expression arg : call.getArguments()) {
             argumentsTypes.add(arg.accept(this, context));
         }
@@ -406,7 +406,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
 
     @Override
     public SymbolType visit(This thisExpression, TypeCheckingContext context) {
-        return context.currentClassSymbolType;
+        return context.getCurrentClassSymbolType();
     }
 
     @Override
@@ -426,8 +426,7 @@ public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, Sy
         SymbolType sizeType = newArray.getSize().accept(this, context);
         checkTypeError(newArray, getPrimitiveType(PrimitiveSymbolTypes.INT), sizeType);
         newArray.getType().incrementDimension();
-        SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension()));
-        return arrayType;
+        return getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension()));
     }
 
     @Override

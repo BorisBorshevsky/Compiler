@@ -8,12 +8,12 @@ public class StringUtils {
 		return joinStrings(parts, ", ");
 	}
 
-	public static String joinStrings(Collection<?> parts, String delimeter) {
+	private static String joinStrings(Collection<?> parts, String delimeter) {
 		String joined = "";
 		int count = 0;
 		for (Object part : parts) {
 			if (count > 0)
-				joined += delimeter;
+				joined += ", ";
 			joined += part;
 			++count;
 		}

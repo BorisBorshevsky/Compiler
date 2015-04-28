@@ -30,7 +30,7 @@ public abstract class ASTNode {
 	 * @param line
 	 *            The line number.
 	 */
-	protected ASTNode(int line) {
+    ASTNode(int line) {
 		this.line = line;
 	}
 

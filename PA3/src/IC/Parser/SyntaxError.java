@@ -10,7 +10,7 @@ public class SyntaxError extends Exception {
     private int column;
     private String desc;
 
-    public  SyntaxError(Token token){
+    public SyntaxError(Token token) {
         this.token = token;
     }
 
@@ -19,6 +19,19 @@ public class SyntaxError extends Exception {
         setColumn(token.getColumn());
         setLine(token.getLine());
         setDesc(token.getTokenName(token.sym));
+    }
+
+    public SyntaxError(String message, int line, int column, String desc) {
+        super(message);
+        this.line = line;
+        this.column = column;
+        this.desc = desc;
+    }
+
+    public SyntaxError(String message, int line, String desc) {
+        super(message);
+        this.line = line;
+        this.desc = desc;
     }
 
     public int getLine() {
@@ -42,19 +55,6 @@ public class SyntaxError extends Exception {
     }
 
     public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    public SyntaxError(String message, int line, int column, String desc) {
-        super(message);
-        this.line = line;
-        this.column = column;
-        this.desc = desc;
-    }
-
-    public SyntaxError(String message, int line, String desc) {
-        super(message);
-        this.line = line;
         this.desc = desc;
     }
 

@@ -7,9 +7,9 @@ public class StatementBlockSymbolTable extends SymbolTable {
 
     public StatementBlockSymbolTable(SymbolTypeTable typeTable) {
 		super("statement block", typeTable);
-	};
+	}
 
-	public void setParentName(String parentName) {
+    public void setParentName(String parentName) {
 		this.setName("statement block in " + parentName);
 	}
 

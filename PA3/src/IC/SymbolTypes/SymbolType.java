@@ -1,11 +1,13 @@
 package IC.SymbolTypes;
 
+
+/**
+ * base for all symbol types
+ */
 public abstract class SymbolType {
 	@Override
 	public abstract String toString();
 
-	// Important: SymbolTypes are used as HashMap keys.
-	// equals() is used in many places.
 	@Override
 	public abstract boolean equals(Object obj);
 	@Override
@@ -14,7 +16,14 @@ public abstract class SymbolType {
 	// For printing the symbol types table.
 	public abstract String getHeader();
 	public abstract int getDisplaySortIndex();
-	public String additionalStringData() {
+
+    //needed in to string
+
+    /**
+     * added to end of string when needed
+     * @return
+     */
+    public String additionalStringData() {
 		return "";
 	}
 

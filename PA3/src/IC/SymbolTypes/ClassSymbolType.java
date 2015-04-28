@@ -2,10 +2,10 @@ package IC.SymbolTypes;
 
 public class ClassSymbolType extends SymbolType {
 
-	public static int NO_BASE_CLASS = -1;
+	private static int NO_BASE_CLASS = -1;
 
-	String name;
-	int baseClassTypeId = NO_BASE_CLASS;
+	private String name;
+	private int baseClassTypeId = NO_BASE_CLASS;
 
 	public ClassSymbolType(String name) {
 		this.name = name;

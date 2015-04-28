@@ -40,7 +40,7 @@ public class StatementsBlock extends Statement {
 	}
 
 
-    StatementBlockSymbolTable symbolTable;
+    private StatementBlockSymbolTable symbolTable;
 
     public StatementBlockSymbolTable getStatementsBlockSymbolTable() {
         return symbolTable;

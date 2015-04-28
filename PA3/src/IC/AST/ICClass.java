@@ -84,7 +84,7 @@ public class ICClass extends ASTNode {
 	}
 
 
-    ClassSymbolTable symbolTable;
+    private ClassSymbolTable symbolTable;
 
     public ClassSymbolTable getClassSymbolTable() {
         return symbolTable;

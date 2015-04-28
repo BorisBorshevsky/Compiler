@@ -30,6 +30,6 @@ public class LibraryMethod extends Method {
 	 *            List of method parameters.
 	 */
 	public LibraryMethod(Type type, String name, List<Formal> formals) {
-		super(type, name, formals, new ArrayList<Statement>());
+		super(type, name, formals, new ArrayList<>());
 	}
 }
