@@ -13,8 +13,8 @@ import IC.Symbols.SymbolTableException;
  */
 public class PrettyPrinter implements Visitor {
 
+    private boolean libraryPrintingEnabled = true;
     private int depth = 0; // depth of indentation
-
     private String ICFilePath;
 
     /**
@@ -24,6 +24,18 @@ public class PrettyPrinter implements Visitor {
      */
     public PrettyPrinter(String ICFilePath) {
         this.ICFilePath = ICFilePath;
+    }
+
+    private static String getTypeStr(Type type) {
+        return ", Type: " + type.getName();
+    }
+
+    public boolean isLibraryPrintingEnabled() {
+        return libraryPrintingEnabled;
+    }
+
+    public void isEnabledASTLibraryPrinting(boolean isLibraryPrintingEnabled) {
+        this.libraryPrintingEnabled = isLibraryPrintingEnabled;
     }
 
     private void indent(StringBuffer output, ASTNode node) {
@@ -45,7 +57,13 @@ public class PrettyPrinter implements Visitor {
         output.append("Abstract Syntax Tree: " + ICFilePath + "\n");
         for (ICClass icClass : program.getClasses()) {
             icClass.setParent(program.getGlobalSymbolTable());
-            output.append(icClass.accept(this));
+            if (!isLibraryPrintingEnabled()) {
+                if (!icClass.getName().equals("Library")) {
+                    output.append(icClass.accept(this));
+                }
+            } else {
+                output.append(icClass.accept(this));
+            }
         }
         return output.toString();
     }
@@ -58,13 +76,12 @@ public class PrettyPrinter implements Visitor {
         if (icClass.hasSuperClass()) {
             output.append(", subclass of " + icClass.getSuperClassName());
         }
-        output.append(", Type: " + icClass.getName() + ", Symbol table: " + icClass.getClassSymbolTable().getParent().getName());
+        output.append(", Type: " + icClass.getName());
+        output.append(", Symbol table: " + icClass.getClassSymbolTable().getParent().getAstName());
         depth += 2;
         for (Field field : icClass.getFields()) {
             indent(output, field);
             output.append("Declaration of field: " + field.getName() + ", Type: " + field.getType().getName() + ", Symbol table: " + icClass.getClassSymbolTable().getName());
-//            output.append("\n    2: Declaration of field: str, Type: string, Symbol table: A");
-//            output.append(field.accept(this));
         }
         for (Method method : icClass.getMethods()) {
             method.setParent(icClass.getClassSymbolTable());
@@ -99,10 +116,6 @@ public class PrettyPrinter implements Visitor {
         return output.toString();
     }
 
-    private static String getTypeStr(Type type) {
-        return ", Type: " + type.getName();
-    }
-
     public Object visit(Field field) {
         StringBuffer output = new StringBuffer();
 
@@ -121,6 +134,7 @@ public class PrettyPrinter implements Visitor {
         indent(output, method);
         output.append("Declaration of library method: " + method.getName());
         depth += 2;
+        method.getType().setParent(method.getMethodSymbolTable());
         output.append(method.getType().accept(this));
         for (Formal formal : method.getFormals()) {
             formal.setParent(method.getMethodSymbolTable());
@@ -128,6 +142,7 @@ public class PrettyPrinter implements Visitor {
         }
         depth -= 2;
         return output.toString();
+
     }
 
     public Object visit(Formal formal) {
@@ -308,7 +323,7 @@ public class PrettyPrinter implements Visitor {
         ++depth;
         localVariable.getType().setParent(localVariable.getParent());
         output.append(localVariable.getType().accept(this));
- //       output.append(", Symbol table: " + localVariable.getParent().getName());
+        //       output.append(", Symbol table: " + localVariable.getParent().getName());
         if (localVariable.hasInitValue()) {
             localVariable.getInitValue().setParent(localVariable.getParent());
             output.append(localVariable.getInitValue().accept(this));
@@ -358,7 +373,7 @@ public class PrettyPrinter implements Visitor {
             output.append("Reference to array");
             int symbolTypeId = location.getParent().lookup(((VariableLocation) location.getArray()).getName()).getTypeId();
             SymbolType symbolType = location.getParent().getTypeTable().getSymbolById(symbolTypeId);
-            output.append(", Type: " + ((ArraySymbolType)symbolType).getBaseType());
+            output.append(", Type: " + ((ArraySymbolType) symbolType).getBaseType());
             output.append(", Symbol table: " + location.getParent().getName());
             depth += 2;
             location.getArray().setParent(location.getParent());
@@ -366,7 +381,7 @@ public class PrettyPrinter implements Visitor {
             location.getIndex().setParent(location.getParent());
             output.append(location.getIndex().accept(this));
             depth -= 2;
-        }catch (SymbolTableException ste){
+        } catch (SymbolTableException ste) {
 
         }
         return output.toString();

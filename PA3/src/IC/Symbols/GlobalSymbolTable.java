@@ -16,8 +16,6 @@ public class GlobalSymbolTable extends SymbolTable {
         return programName;
     }
 
-
-
     public void setProgramName(String programName) {
         this.programName = programName;
     }

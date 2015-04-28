@@ -22,7 +22,7 @@ public class Literal extends Expression {
 	}
 
     @Override
-    public <D, U> U accept(PropagatingVisitor<D, U> v, D context) {
+    public <D, U> U accept(semanticCheckVisitor<D, U> v, D context) {
         return v.visit(this, context);
     }
 	/**

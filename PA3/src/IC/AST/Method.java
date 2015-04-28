@@ -1,7 +1,6 @@
 package IC.AST;
 
-import IC.Parser.JoinStringsHelper;
-import IC.SymbolTypes.SymbolType;
+import IC.Parser.StringUtils;
 import IC.Symbols.MethodSymbolTable;
 
 import java.util.ArrayList;
@@ -64,7 +63,7 @@ public abstract class Method extends ASTNode {
             }
             formalsTypeNames.add(typeName);
         }
-        builder.append(JoinStringsHelper.joinStrings(formalsTypeNames));
+        builder.append(StringUtils.joinStrings(formalsTypeNames));
         builder.append(" -> ");
         builder.append(getType().getName());
         for (int i = 0 ; i < getType().getDimension(); i++){

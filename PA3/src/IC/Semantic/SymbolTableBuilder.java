@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SymbolTableBuilderVisitor implements Visitor {
+public class SymbolTableBuilder implements Visitor {
 
     private String programName;
     private SymbolTypeTable typeTable;
-    private List<SemanticError> errors = new ArrayList<SemanticError>();
+    private List<SemanticError> errors = new ArrayList<>();
 
-    public SymbolTableBuilderVisitor(String programName) {
+    public SymbolTableBuilder(String programName) {
         this.programName = programName;
         this.typeTable = new SymbolTypeTable(programName);
     }
@@ -29,7 +29,6 @@ public class SymbolTableBuilderVisitor implements Visitor {
         // Create the main symbol table
         GlobalSymbolTable globalTable = new GlobalSymbolTable(programName, typeTable);
         program.setGlobalSymbolTable(globalTable);
-
 
         // Step 1: Go through the classes, and create a Symbol and a SymbolTable
         // for each one.
@@ -120,6 +119,7 @@ public class SymbolTableBuilderVisitor implements Visitor {
         for (SymbolTable child : table.getChildren()) {
             StatementBlockSymbolTable blockChild = (StatementBlockSymbolTable) child;
             blockChild.setParentName(table.getName());
+            blockChild.setStatementOutputString(table.getName());
             setParentNamesForChildren(child);
         }
     }

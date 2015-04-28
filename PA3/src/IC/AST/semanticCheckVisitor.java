@@ -5,7 +5,7 @@ package IC.AST;
  * 
  * @author Tovi Almozlino
  */
-public interface PropagatingVisitor<D, U> {
+public interface semanticCheckVisitor<D, U> {
 
 	public U visit(Program program, D context);
 

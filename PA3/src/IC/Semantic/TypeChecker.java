@@ -13,14 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisitorContext, SymbolType> {
+public class TypeChecker implements semanticCheckVisitor<TypeCheckingContext, SymbolType> {
 
     private Stack<SymbolTable> symScopeStack = new Stack<SymbolTable>();
     private List<SemanticError> errors = new ArrayList<SemanticError>();
-    private TypeComparer typeComparer;
-
-    public TypeCheckingVisitor() {
-    }
+    private TypeCompareUtil typeCompareUtil;
 
     public List<SemanticError> getErrors() {
         return errors;
@@ -30,18 +27,10 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
         return symScopeStack.peek();
     }
 
-    /*
-     * When visit fails return null otherwise return true (!= null)
-     */
     @Override
-    public SymbolType visit(Program program, TypeCheckingVisitorContext context) {
-        // recursive call to class
+    public SymbolType visit(Program program, TypeCheckingContext context) {
         symScopeStack.push(program.getGlobalSymbolTable());
-
-        // HACK: Initialize the type comparer here (because it needs a type
-        // table).
-        typeComparer = new TypeComparer(getCurrentScope().getTypeTable());
-
+        typeCompareUtil = new TypeCompareUtil(getCurrentScope().getTypeTable());
         for (ICClass clazz : program.getClasses()) {
             clazz.accept(this, context);
         }
@@ -50,15 +39,12 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(ICClass clazz, TypeCheckingVisitorContext context) {
+    public SymbolType visit(ICClass clazz, TypeCheckingContext context) {
         symScopeStack.push(clazz.getClassSymbolTable());
-        // Set the current class symbol type in the context.
         Symbol classSymbol;
         try {
             classSymbol = getCurrentScope().lookup(clazz.getName());
         } catch (SymbolTableException e) {
-            // Not supposed to get here: class should always be in global symbol
-            // table.
             return null;
         }
         context.currentClassSymbolType = (ClassSymbolType) getTypeTable().getSymbolById(classSymbol.getTypeId());
@@ -75,12 +61,12 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(Field field, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Field field, TypeCheckingContext context) {
         return null;
     }
 
     @Override
-    public SymbolType visit(VirtualMethod method, TypeCheckingVisitorContext context) {
+    public SymbolType visit(VirtualMethod method, TypeCheckingContext context) {
         MethodSymbolType methodSymbolType = visitMethod(method, context);
 
         try {
@@ -95,8 +81,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                 } else {
                     symbolHidingLegal = true;
                     for (int i = 0; i < methodInBaseClassType.getFormalsTypes().size(); ++i) {
-                        if (!typeComparer.isTypeSameOrExtends(
-                            methodInBaseClassType.getFormalsTypes().get(i), methodSymbolType.getFormalsTypes().get(i))) {
+                        if (!typeCompareUtil.isTypeSameOrExtends(methodInBaseClassType.getFormalsTypes().get(i), methodSymbolType.getFormalsTypes().get(i))) {
                             symbolHidingLegal = false;
                             errorMessage += "Type of arg"
                                 + i
@@ -111,22 +96,15 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                         }
                     }
                 }
-                if (!typeComparer.isTypeSameOrExtends(methodSymbolType.getReturnType(), methodInBaseClassType.getReturnType())) {
-                    errorMessage += "Return type '"
-                        + methodSymbolType.getReturnType()
-                        + "' is expected to <= '"
-                        + methodInBaseClassType.getReturnType() + "'\n";
+                if (!typeCompareUtil.isTypeSameOrExtends(methodSymbolType.getReturnType(), methodInBaseClassType.getReturnType())) {
+                    errorMessage += "Return type '" + methodSymbolType.getReturnType() + "' is expected to <= '" + methodInBaseClassType.getReturnType() + "'\n";
                     symbolHidingLegal = false;
                 }
             } else if (methodInBaseClass.getKind() == SymbolKind.STATIC_METHOD) {
                 errorMessage += "Method in base class is marked as static";
             }
             if (!symbolHidingLegal) {
-                errors.add(new SemanticError("Method [" + method.getName() + "] hides '" + methodInBaseClass.getKind()
-                    + "' in base class. Method signature: "
-                    + methodSymbolType + ", base class type: "
-                    + symbolInBaseClassType + ". Errors:\n" + errorMessage,
-                    method.getLine()));
+                errors.add(new SemanticError("Method [" + method.getName() + "] hides '" + methodInBaseClass.getKind() + "' in base class. Method signature: " + methodSymbolType + ", base class type: " + symbolInBaseClassType + ". Errors:\n" + errorMessage, method.getLine()));
             }
         } catch (SymbolTableException e) {
             // That's ok: not every method hides something in base class.
@@ -136,23 +114,21 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(StaticMethod method, TypeCheckingVisitorContext context) {
+    public SymbolType visit(StaticMethod method, TypeCheckingContext context) {
         return visitMethod(method, context);
     }
 
     @Override
-    public SymbolType visit(LibraryMethod method, TypeCheckingVisitorContext context) {
+    public SymbolType visit(LibraryMethod method, TypeCheckingContext context) {
         return visitMethod(method, context);
     }
 
-    private MethodSymbolType visitMethod(Method method, TypeCheckingVisitorContext context) {
+    private MethodSymbolType visitMethod(Method method, TypeCheckingContext context) {
         symScopeStack.push(method.getMethodSymbolTable());
         int typeId = -1;
         try {
             typeId = method.getMethodSymbolTable().getParent().lookup(method.getName()).getTypeId();
         } catch (SymbolTableException e) {
-            // Not supposed to get here, unless there's a bug in
-            // SymbolTableBuilder.
             e.printStackTrace();
         }
         MethodSymbolType symbolType = (MethodSymbolType) getTypeTable().getSymbolById(typeId);
@@ -166,22 +142,22 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(Formal formal, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Formal formal, TypeCheckingContext context) {
         return null;
     }
 
     @Override
-    public SymbolType visit(PrimitiveType type, TypeCheckingVisitorContext context) {
+    public SymbolType visit(PrimitiveType type, TypeCheckingContext context) {
         return null;
     }
 
     @Override
-    public SymbolType visit(UserType type, TypeCheckingVisitorContext context) {
+    public SymbolType visit(UserType type, TypeCheckingContext context) {
         return null;
     }
 
     @Override
-    public SymbolType visit(Assignment assignment, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Assignment assignment, TypeCheckingContext context) {
         SymbolType variable = assignment.getVariable().accept(this, context);
         SymbolType expression = assignment.getAssignment().accept(this, context);
         checkTypeError(assignment, variable, expression);
@@ -189,7 +165,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     private boolean checkTypeError(ASTNode node, SymbolType expectedType, SymbolType actualType) {
-        if (!typeComparer.isTypeSameOrExtends(actualType, expectedType)) {
+        if (!typeCompareUtil.isTypeSameOrExtends(actualType, expectedType)) {
             errors.add(new SemanticError("Type error in node '" + node.getClass().getSimpleName() + "': unexpected type: '" + actualType + "', expected a type that is less than or equals to: '" + expectedType + "'", node.getLine()));
             return false;
         }
@@ -210,42 +186,32 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(CallStatement callStatement,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(CallStatement callStatement, TypeCheckingContext context) {
         callStatement.getCall().accept(this, context);
         return getVoidType();
     }
 
     @Override
-    public SymbolType visit(Return returnStatement, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Return returnStatement, TypeCheckingContext context) {
         SymbolType returnType = context.currentMethodSymbolType.getReturnType();
-        // 4 options:
         // 1. void method, with return [expr]; -- Error
         // 2. void method, with return; -- OK
         // 3. non-void method, with return [expr] -- Check matching types
         // 4. non-void method, with return; -- Error
         if (returnStatement.hasValue()
-            && context.currentMethodSymbolType.getReturnType().equals(
-            getVoidType())) {
-            errors.add(new SemanticError(
-                "A 'void' method is trying to return a value",
-                returnStatement.getLine()));
-        } else if (!returnStatement.hasValue()
-            && !context.currentMethodSymbolType.getReturnType().equals(
-            getVoidType())) {
-            errors.add(new SemanticError(
-                "A non-'void' method should return a value",
-                returnStatement.getLine()));
+            && context.currentMethodSymbolType.getReturnType().equals(getVoidType())) {
+            errors.add(new SemanticError("A 'void' method is trying to return a value", returnStatement.getLine()));
+        } else if (!returnStatement.hasValue() && !context.currentMethodSymbolType.getReturnType().equals(getVoidType())) {
+            errors.add(new SemanticError("A non-'void' method should return a value", returnStatement.getLine()));
         } else if (returnStatement.hasValue()) {
-            SymbolType expression = returnStatement.getValue().accept(this,
-                context);
+            SymbolType expression = returnStatement.getValue().accept(this, context);
             checkTypeError(returnStatement, returnType, expression);
         }
         return getVoidType();
     }
 
     @Override
-    public SymbolType visit(If ifStatement, TypeCheckingVisitorContext context) {
+    public SymbolType visit(If ifStatement, TypeCheckingContext context) {
         SymbolType conditionExpression = ifStatement.getCondition().accept(this, context);
         checkTypeError(ifStatement, getPrimitiveType(PrimitiveSymbolType.PrimitiveSymbolTypes.BOOLEAN), conditionExpression);
         ifStatement.getOperation().accept(this, context);
@@ -256,7 +222,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(While whileStatement, TypeCheckingVisitorContext context) {
+    public SymbolType visit(While whileStatement, TypeCheckingContext context) {
         SymbolType conditionExpression = whileStatement.getCondition().accept(this, context);
         checkTypeError(whileStatement, getPrimitiveType(PrimitiveSymbolType.PrimitiveSymbolTypes.BOOLEAN), conditionExpression);
         whileStatement.getOperation().accept(this, context);
@@ -264,17 +230,17 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(Break breakStatement, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Break breakStatement, TypeCheckingContext context) {
         return getVoidType();
     }
 
     @Override
-    public SymbolType visit(Continue continueStatement, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Continue continueStatement, TypeCheckingContext context) {
         return getVoidType();
     }
 
     @Override
-    public SymbolType visit(StatementsBlock statementsBlock, TypeCheckingVisitorContext context) {
+    public SymbolType visit(StatementsBlock statementsBlock, TypeCheckingContext context) {
         symScopeStack.push(statementsBlock.getStatementsBlockSymbolTable());
         for (Statement stmt : statementsBlock.getStatements()) {
             stmt.accept(this, context);
@@ -284,7 +250,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(LocalVariable localVariable, TypeCheckingVisitorContext context) {
+    public SymbolType visit(LocalVariable localVariable, TypeCheckingContext context) {
         if (localVariable.hasInitValue()) {
             SymbolType variableType = getSymbolType(localVariable.getName());
             if (variableType != null) {
@@ -312,15 +278,11 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(VariableLocation location, TypeCheckingVisitorContext context) {
+    public SymbolType visit(VariableLocation location, TypeCheckingContext context) {
         if (location.isExternal()) {
             SymbolType locationType = location.getLocation().accept(this, context);
             if (!(locationType instanceof ClassSymbolType)) {
-                errors.add(new SemanticError(
-                    "Location is not a class, can't look for field '"
-                        + location.getName()
-                        + "' under expression of type '" + locationType
-                        + "'", location.getLine()));
+                errors.add(new SemanticError("Location is not a class, can't look for field '" + location.getName() + "' under expression of type '" + locationType + "'", location.getLine()));
                 return getVoidType();
             } else {
                 ClassSymbolType classSymbolType = (ClassSymbolType) locationType;
@@ -329,8 +291,6 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                 try {
                     classSymbolTable = getCurrentScope().lookupScope(className);
                 } catch (SymbolTableException e) {
-                    // Not supposed to get here: if there's a symbol of this
-                    // type
                     System.out.println("Unexpected compiler error.");
                     e.printStackTrace();
                     return null;
@@ -339,8 +299,6 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                     Symbol variableSymbol = classSymbolTable.lookup(location.getName());
                     return getTypeTable().getSymbolById(variableSymbol.getTypeId());
                 } catch (SymbolTableException e) {
-                    // HACK: We didn't do this in ScopeChecking, doing it
-                    // here. Checking if location has member of this name.
                     errors.add(new SemanticError(e.getMessage(), location.getLine()));
                     return getVoidType();
                 }
@@ -351,15 +309,13 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(ArrayLocation location, TypeCheckingVisitorContext context) {
+    public SymbolType visit(ArrayLocation location, TypeCheckingContext context) {
         SymbolType indexType = location.getIndex().accept(this, context);
         checkTypeError(location, getPrimitiveType(PrimitiveSymbolTypes.INT),
             indexType);
         SymbolType locationType = location.getArray().accept(this, context);
         if (!(locationType instanceof ArraySymbolType)) {
-            errors.add(new SemanticError(
-                "Value is treated as an array when it is actaully of type '"
-                    + locationType + "'", location.getLine()));
+            errors.add(new SemanticError("Value is treated as an array when it is actaully of type '" + locationType + "'", location.getLine()));
             return getVoidType();
         }
         ArraySymbolType arrayType = (ArraySymbolType) locationType;
@@ -367,33 +323,24 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(StaticCall call, TypeCheckingVisitorContext context) {
+    public SymbolType visit(StaticCall call, TypeCheckingContext context) {
         Symbol methodSymbol;
         try {
-            SymbolTable otherScope = getCurrentScope().lookupScope(
-                call.getClassName());
+            SymbolTable otherScope = getCurrentScope().lookupScope(call.getClassName());
             methodSymbol = otherScope.lookup(call.getName());
         } catch (SymbolTableException e) {
-            // Call is illegal: scope check already reported this.
             return getVoidType();
         }
 
-        // Scope checking should have made sure that this is a STATIC_METHOD
-        // symbol.
-        MethodSymbolType methodSymbolType = (MethodSymbolType) getTypeTable()
-            .getSymbolById(methodSymbol.getTypeId());
-
+        MethodSymbolType methodSymbolType = (MethodSymbolType) getTypeTable().getSymbolById(methodSymbol.getTypeId());
         String methodName = call.getClassName() + "." + call.getName();
 
-        if (!checkMethodCallTypeMatching(call, methodName, methodSymbolType.getFormalsTypes(), context)) {
-            // Do nothing: just report errors, but return the true return type
-            // of the method.
-        }
+        checkMethodCallTypeMatching(call, methodName, methodSymbolType.getFormalsTypes(), context);
 
         return methodSymbolType.getReturnType();
     }
 
-    private boolean checkMethodCallTypeMatching(Call call, String methodName, List<SymbolType> argumentsExpectedTypes, TypeCheckingVisitorContext context) {
+    private boolean checkMethodCallTypeMatching(Call call, String methodName, List<SymbolType> argumentsExpectedTypes, TypeCheckingContext context) {
         List<SymbolType> argumentsTypes = new ArrayList<SymbolType>();
         for (Expression arg : call.getArguments()) {
             argumentsTypes.add(arg.accept(this, context));
@@ -401,58 +348,40 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
 
         boolean isCallLegal = true;
         if (argumentsExpectedTypes.size() != argumentsTypes.size()) {
-            errors.add(new SemanticError(
-                "Wrong number of arguments on call to method ["
-                    + methodName + "]. Expected: "
-                    + argumentsExpectedTypes.size() + ", got: "
-                    + argumentsTypes.size(), call.getLine()));
+            errors.add(new SemanticError("Wrong number of arguments on call to method [" + methodName + "]. Expected: " + argumentsExpectedTypes.size() + ", got: " + argumentsTypes.size(), call.getLine()));
             isCallLegal = false;
         } else {
             for (int i = 0; i < argumentsExpectedTypes.size(); ++i) {
-                isCallLegal &= checkTypeError(call,
-                    argumentsExpectedTypes.get(i), argumentsTypes.get(i));
+                isCallLegal &= checkTypeError(call, argumentsExpectedTypes.get(i), argumentsTypes.get(i));
             }
         }
         return isCallLegal;
     }
 
     @Override
-    public SymbolType visit(VirtualCall call, TypeCheckingVisitorContext context) {
+    public SymbolType visit(VirtualCall call, TypeCheckingContext context) {
         for (Expression arg : call.getArguments()) {
             arg.accept(this, context);
         }
         Symbol methodSymbol;
         String methodName;
         if (call.isExternal()) {
-            // 1. Get Class type of location (type checking should have this
-            // info)
+            // 1. Get Class type of location (type checking should have this info)
             SymbolType locationType = call.getLocation().accept(this, context);
             if (!(locationType instanceof ClassSymbolType)) {
-                errors.add(new SemanticError(
-                    "Can't invoke a method: expression is not a reference to a class object.",
-                    call.getLine()));
+                errors.add(new SemanticError("Can't invoke a method: expression is not a reference to a class object.", call.getLine()));
                 return getVoidType();
             }
             // 2. Get symbol table for that class
             ClassSymbolType classLocation = (ClassSymbolType) locationType;
             SymbolTable classScope;
             try {
-                classScope = getCurrentScope().lookupScope(
-                    classLocation.getName());
+                classScope = getCurrentScope().lookupScope(classLocation.getName());
             } catch (SymbolTableException e) {
-                // This means that the expression evaluates to a class symbol of
-                // a class that doesn't exist. This means that somewhere there
-                // was a
-                // variable that was defined with this class name, and
-                // ScopeChecker
-                // would've reported it there.
-                errors.add(new SemanticError(
-                    "Can't invoke a method: expression couldn't find class of type "
-                        + classLocation.getName() + ".", call.getLine()));
+                errors.add(new SemanticError("Can't invoke a method: expression couldn't find class of type " + classLocation.getName() + ".", call.getLine()));
                 return getVoidType();
             }
 
-            // 3. HACK: Scope Checking: Verify the class has the method.
             try {
                 methodSymbol = classScope.lookup(call.getName());
             } catch (SymbolTableException e) {
@@ -461,11 +390,9 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
             }
             methodName = classLocation.getName() + "." + call.getName();
         } else {
-            // Not external: verify that there's a method in current scope.
             try {
                 methodSymbol = getCurrentScope().lookup(call.getName());
             } catch (SymbolTableException e) {
-                // Call is illegal: scope check already reported this.
                 return getVoidType();
             }
             methodName = call.getName();
@@ -478,12 +405,12 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(This thisExpression, TypeCheckingVisitorContext context) {
+    public SymbolType visit(This thisExpression, TypeCheckingContext context) {
         return context.currentClassSymbolType;
     }
 
     @Override
-    public SymbolType visit(NewClass newClass, TypeCheckingVisitorContext context) {
+    public SymbolType visit(NewClass newClass, TypeCheckingContext context) {
         Symbol classSymbol;
         try {
             classSymbol = getCurrentScope().lookup(newClass.getName());
@@ -495,28 +422,25 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(NewArray newArray, TypeCheckingVisitorContext context) {
+    public SymbolType visit(NewArray newArray, TypeCheckingContext context) {
         SymbolType sizeType = newArray.getSize().accept(this, context);
         checkTypeError(newArray, getPrimitiveType(PrimitiveSymbolTypes.INT), sizeType);
         newArray.getType().incrementDimension();
-//        SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension() + 1));
         SymbolType arrayType = getTypeTable().getSymbolById(getTypeTable().getSymbolTypeId(newArray.getType(), newArray.getType().getDimension()));
         return arrayType;
     }
 
     @Override
-    public SymbolType visit(Length length, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Length length, TypeCheckingContext context) {
         SymbolType arrayType = length.getArray().accept(this, context);
         if (!(arrayType instanceof ArraySymbolType)) {
-            errors.add(new SemanticError(
-                "length can only be run on arrays; got type: " + arrayType,
-                length.getLine()));
+            errors.add(new SemanticError("length can only be run on arrays; got type: " + arrayType, length.getLine()));
         }
         return getPrimitiveType(PrimitiveSymbolTypes.INT);
     }
 
     @Override
-    public SymbolType visit(MathBinaryOp binaryOp, TypeCheckingVisitorContext context) {
+    public SymbolType visit(MathBinaryOp binaryOp, TypeCheckingContext context) {
         SymbolType leftType = binaryOp.getFirstOperand().accept(this, context);
         SymbolType rightType = binaryOp.getSecondOperand().accept(this, context);
         switch (binaryOp.getOperator()) {
@@ -527,10 +451,10 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                 checkBinaryOp(binaryOp, context, getPrimitiveType(PrimitiveSymbolTypes.INT));
                 return getPrimitiveType(PrimitiveSymbolTypes.INT);
             case PLUS:
-                if (typeComparer.isTypeSameOrExtends(leftType, getPrimitiveType(PrimitiveSymbolTypes.STRING)) && typeComparer.isTypeSameOrExtends(rightType, getPrimitiveType(PrimitiveSymbolTypes.STRING))) {
+                if (typeCompareUtil.isTypeSameOrExtends(leftType, getPrimitiveType(PrimitiveSymbolTypes.STRING)) && typeCompareUtil.isTypeSameOrExtends(rightType, getPrimitiveType(PrimitiveSymbolTypes.STRING))) {
                     return getPrimitiveType(PrimitiveSymbolTypes.STRING);
                 }
-                if (typeComparer.isTypeSameOrExtends(leftType, getPrimitiveType(PrimitiveSymbolTypes.INT)) && typeComparer.isTypeSameOrExtends(rightType, getPrimitiveType(PrimitiveSymbolTypes.INT))) {
+                if (typeCompareUtil.isTypeSameOrExtends(leftType, getPrimitiveType(PrimitiveSymbolTypes.INT)) && typeCompareUtil.isTypeSameOrExtends(rightType, getPrimitiveType(PrimitiveSymbolTypes.INT))) {
                     return getPrimitiveType(PrimitiveSymbolTypes.INT);
                 }
                 errors.add(new SemanticError("'+' operator can be used for either INT addition or STRING concatenation. Types received: " + leftType + ", " + rightType, binaryOp.getLine()));
@@ -543,7 +467,7 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
                 return getPrimitiveType(PrimitiveSymbolTypes.BOOLEAN);
             case EQUAL:
             case NEQUAL:
-                if (!(typeComparer.isTypeSameOrExtends(leftType, rightType) || typeComparer.isTypeSameOrExtends(rightType, leftType))) {
+                if (!(typeCompareUtil.isTypeSameOrExtends(leftType, rightType) || typeCompareUtil.isTypeSameOrExtends(rightType, leftType))) {
                     errors.add(new SemanticError("Can't check equality in non-matching types. Types: " + leftType + ", " + rightType, binaryOp.getLine()));
                 }
                 return getPrimitiveType(PrimitiveSymbolTypes.BOOLEAN);
@@ -553,26 +477,24 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
         }
     }
 
-    private void checkBinaryOp(BinaryOp binaryOp, TypeCheckingVisitorContext context, SymbolType opType) {
+    private void checkBinaryOp(BinaryOp binaryOp, TypeCheckingContext context, SymbolType opType) {
         SymbolType leftType = binaryOp.getFirstOperand().accept(this, context);
         SymbolType rightType = binaryOp.getSecondOperand().accept(this, context);
-        if (!typeComparer.isTypeSameOrExtends(leftType, rightType)) {
+        if (!typeCompareUtil.isTypeSameOrExtends(leftType, rightType)) {
             errors.add(new SemanticError("Type error in node '" + binaryOp.getClass().getSimpleName() + "': unexpected type: '" + leftType + "', expected a type that is less than or equals to: '" + rightType + "'", binaryOp.getLine()));
         }
     }
 
 
     @Override
-    public SymbolType visit(LogicalBinaryOp binaryOp, TypeCheckingVisitorContext context) {
+    public SymbolType visit(LogicalBinaryOp binaryOp, TypeCheckingContext context) {
         checkBinaryOp(binaryOp, context, getPrimitiveType(PrimitiveSymbolTypes.BOOLEAN));
         return getPrimitiveType(PrimitiveSymbolTypes.BOOLEAN);
     }
 
     @Override
-    public SymbolType visit(MathUnaryOp unaryOp, TypeCheckingVisitorContext context) {
-        if (unaryOp.getOperand() instanceof Literal
-            && unaryOp.getOperator() == UnaryOps.UMINUS) {
-            // HACK: For the bounds checking.
+    public SymbolType visit(MathUnaryOp unaryOp, TypeCheckingContext context) {
+        if (unaryOp.getOperand() instanceof Literal && unaryOp.getOperator() == UnaryOps.UMINUS) {
             ((Literal) unaryOp.getOperand()).yourParentIsUMinus();
         }
         return checkUnaryOp(unaryOp, context,
@@ -580,21 +502,19 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
     }
 
     @Override
-    public SymbolType visit(LogicalUnaryOp unaryOp,
-                            TypeCheckingVisitorContext context) {
+    public SymbolType visit(LogicalUnaryOp unaryOp, TypeCheckingContext context) {
         return checkUnaryOp(unaryOp, context,
             getPrimitiveType(PrimitiveSymbolTypes.BOOLEAN));
     }
 
-    private SymbolType checkUnaryOp(UnaryOp unaryOp,
-                                    TypeCheckingVisitorContext context, SymbolType expectedType) {
+    private SymbolType checkUnaryOp(UnaryOp unaryOp, TypeCheckingContext context, SymbolType expectedType) {
         SymbolType operandType = unaryOp.getOperand().accept(this, context);
         checkTypeError(unaryOp, expectedType, operandType);
         return expectedType;
     }
 
     @Override
-    public SymbolType visit(Literal literal, TypeCheckingVisitorContext context) {
+    public SymbolType visit(Literal literal, TypeCheckingContext context) {
         switch (literal.getType()) {
             case TRUE:
             case FALSE:
@@ -620,13 +540,12 @@ public class TypeCheckingVisitor implements PropagatingVisitor<TypeCheckingVisit
         try {
             Integer.valueOf((String) literal.getValue());
         } catch (NumberFormatException e) {
-            errors.add(new SemanticError("Integer is out of bounds: "
-                + literal.getValue(), literal.getLine()));
+            errors.add(new SemanticError("Integer is out of bounds: " + literal.getValue(), literal.getLine()));
         }
     }
 
     @Override
-    public SymbolType visit(ExpressionBlock expressionBlock, TypeCheckingVisitorContext context) {
+    public SymbolType visit(ExpressionBlock expressionBlock, TypeCheckingContext context) {
         return expressionBlock.getExpression().accept(this, context);
     }
 

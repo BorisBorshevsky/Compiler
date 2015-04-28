@@ -1,6 +1,6 @@
 package IC.SymbolTypes;
 
-import IC.Parser.JoinStringsHelper;
+import IC.Parser.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class MethodSymbolType extends SymbolType {
 		for (SymbolType typeName : formalsTypes) {
 			formalsTypeNames.add(typeName.toString());
 		}
-		builder.append(JoinStringsHelper.joinStrings(formalsTypeNames));
+		builder.append(StringUtils.joinStrings(formalsTypeNames));
 		builder.append(" -> ");
 		builder.append(getReturnType());
 		builder.append("}");

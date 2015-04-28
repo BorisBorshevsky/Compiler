@@ -23,19 +23,6 @@ public class Token extends Symbol {
         return id;
     }
 
-//    public Token(int id)
-//    {
-//        super(id);
-//        this.id = id;
-//    }
-//
-//
-//    public Token(int id, Object val)
-//    {
-//        super(id, val);
-//        this.id = id;
-//        this.value = val.toString();
-//    }
 
     public Token(int id, int line, int column)
     {

@@ -2,7 +2,7 @@ package IC.Parser;
 
 import java.util.Collection;
 
-public class JoinStringsHelper {
+public class StringUtils {
 
 	public static String joinStrings(Collection<?> parts) {
 		return joinStrings(parts, ", ");

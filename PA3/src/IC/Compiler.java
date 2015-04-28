@@ -3,18 +3,8 @@ package IC;
 import IC.AST.ICClass;
 import IC.AST.PrettyPrinter;
 import IC.AST.Program;
-import IC.Parser.Lexer;
-import IC.Parser.LexicalError;
-import IC.Parser.LibParser;
-import IC.Parser.Parser;
-import IC.Parser.SyntaxError;
-import IC.Semantic.BreakContinueAndThisValidator;
-import IC.Semantic.SemanticError;
-import IC.Semantic.SemanticScopeChecker;
-import IC.Semantic.SingleMainFunctionValidator;
-import IC.Semantic.SymbolTableBuilderVisitor;
-import IC.Semantic.TypeCheckingVisitor;
-import IC.Semantic.TypeCheckingVisitorContext;
+import IC.Parser.*;
+import IC.Semantic.*;
 import IC.Symbols.GlobalSymbolTable;
 import java_cup.runtime.Symbol;
 
@@ -45,31 +35,22 @@ public class Compiler {
             ICClass libRootSymbol = null;
             Program icRootClass = null;
 
+            if (libFileName != null) {
+                libRootSymbol = (ICClass) parseLibFile(libFileName);
+            }
 
             icRootClass = parseMainFile();
 
             if (icRootClass != null) {
 
-
-                if (libFileName != null) {
-                    libRootSymbol = (ICClass) parseLibFile(libFileName);
-                }
-
-
-
                 semanticChecks(libRootSymbol, icRootClass);
 
                 if (printAst) {
-
-//                    SymbolTableBuilderVisitor symTabBuilder = new SymbolTableBuilderVisitor(new File(icFileName).getName());
-//                    GlobalSymbolTable symbolTable = symTabBuilder.visit(icRootClass);
-//
                     PrettyPrinter prettyPrinter = new PrettyPrinter(icFileName);
+                    prettyPrinter.isEnabledASTLibraryPrinting(false);
                     String output = (String) icRootClass.accept(prettyPrinter);
                     System.out.println(output);
                 }
-
-
 
 
             }
@@ -83,33 +64,33 @@ public class Compiler {
         }
     }
 
-    private static void semanticChecks(ICClass libRootSymbol, Program icRootClass) throws IOException {
+    private static boolean semanticChecks(ICClass libRootSymbol, Program icRootClass) throws IOException {
         //semantic checks
 
         //add class to root class
         if (libRootSymbol != null) {
-            icRootClass.getClasses().add(libRootSymbol);
+            icRootClass.getClasses().add(0, libRootSymbol);
         }
 
-        SymbolTableBuilderVisitor symTabBuilder = new SymbolTableBuilderVisitor(new File(icFileName).getName());
+        SymbolTableBuilder symTabBuilder = new SymbolTableBuilder(new File(icFileName).getName());
         GlobalSymbolTable symbolTable = symTabBuilder.visit(icRootClass);
         if (printErrors(icFileName, symTabBuilder.getErrors())) {
-            // return flase
+            return false;
         }
 
 
         //scope
-        SemanticScopeChecker scopeChecker = new SemanticScopeChecker();
+        ScopeChecker scopeChecker = new ScopeChecker();
         scopeChecker.visit(icRootClass);
         if (printErrors(icFileName, scopeChecker.getErrors())) {
-//                    return false;
+            return false;
         }
 
         //type check
-        TypeCheckingVisitor typeChecker = new TypeCheckingVisitor();
-        typeChecker.visit(icRootClass, new TypeCheckingVisitorContext());
+        TypeChecker typeChecker = new TypeChecker();
+        typeChecker.visit(icRootClass, new TypeCheckingContext());
         if (printErrors(icFileName, typeChecker.getErrors())) {
-//                    return false;
+            return false;
         }
 
 
@@ -118,21 +99,22 @@ public class Compiler {
         SemanticError mainValidatorResult = (SemanticError) mainValidator.visit(icRootClass);
         if (mainValidatorResult != null) {
             printError(icFileName, mainValidatorResult);
-//                    return false;
+            return false;
         }
 
         // break continue only in loop
         //this only in instance mothods
-        BreakContinueAndThisValidator keywordValid = new BreakContinueAndThisValidator();
+        BreakContinueValidator keywordValid = new BreakContinueValidator();
         keywordValid.visit(icRootClass);
         if (printErrors(icFileName, keywordValid.getErrors())) {
-//                    return false;
+            return false;
         }
 
         if (dumpsymtab) {
             System.out.println();
             System.out.println(symbolTable.toString());
         }
+        return true;
     }
 
     private static Program parseMainFile() throws Exception {
